@@ -1,11 +1,12 @@
 package com.jeefbeebos23.qolmod.mixin;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(HandledScreen.class)
+@Mixin(AbstractContainerScreen.class)
 public abstract class HandledScreenMixin {
 
-    @Shadow private Slot getSlotAt(double x, double y) { return null; }
-    @Shadow protected abstract void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType);
-    @Shadow protected ScreenHandler handler;
+    @Shadow private Slot getHoveredSlot(double x, double y) { return null; }
+    @Shadow protected abstract void slotClicked(Slot slot, int slotId, int button, ContainerInput actionType);
+    @Shadow protected AbstractContainerMenu menu;
 
     private final List<Slot> qol$dragSlots = new ArrayList<>();
     private boolean qol$isShiftRightDragging = false;
@@ -29,22 +30,21 @@ public abstract class HandledScreenMixin {
     private void onScroll(double mouseX, double mouseY, double horizontalAmount,
                           double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        Slot slot = getSlotAt(mouseX, mouseY);
-        if (slot == null || !slot.hasStack()) return;
-        if (!handler.getCursorStack().isEmpty()) return;
+        Slot slot = getHoveredSlot(mouseX, mouseY);
+        if (slot == null || !slot.hasItem()) return;
+        if (!menu.getCarried().isEmpty()) return;
         if (verticalAmount < 0) {
-            onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
+            slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
             cir.setReturnValue(true);
         }
     }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
-    private void onDrag(double mouseX, double mouseY, int button,
-                        double deltaX, double deltaY,
+    private void onDrag(MouseButtonEvent event, double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        if (button == 1 && MinecraftClient.getInstance().options.sneakKey.isPressed()) {
-            Slot slot = getSlotAt(mouseX, mouseY);
+        if (event.button() == 1 && Minecraft.getInstance().options.keyShift.isDown()) {
+            Slot slot = getHoveredSlot(event.x(), event.y());
             if (slot != null && !qol$dragSlots.contains(slot)) {
                 qol$dragSlots.add(slot);
             }
@@ -54,12 +54,11 @@ public abstract class HandledScreenMixin {
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"))
-    private void onRelease(double mouseX, double mouseY, int button,
-                           CallbackInfoReturnable<Boolean> cir) {
-        if (button == 1 && qol$isShiftRightDragging) {
+    private void onRelease(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
+        if (event.button() == 1 && qol$isShiftRightDragging) {
             for (Slot slot : qol$dragSlots) {
-                if (handler.getCursorStack().isEmpty()) break;
-                onMouseClick(slot, slot.id, 1, SlotActionType.PICKUP);
+                if (menu.getCarried().isEmpty()) break;
+                slotClicked(slot, slot.index, 1, ContainerInput.PICKUP);
             }
             qol$dragSlots.clear();
             qol$isShiftRightDragging = false;

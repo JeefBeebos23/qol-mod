@@ -9,8 +9,8 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -96,61 +96,61 @@ public class QolConfig {
     public static Screen createConfigScreen(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
             .setParentScreen(parent)
-            .setTitle(Text.translatable("config.qolmod.title"))
+            .setTitle(Component.translatable("config.qolmod.title"))
             .setSavingRunnable(QolConfig::save);
 
         ConfigEntryBuilder eb = builder.entryBuilder();
 
         ConfigCategory movement = builder.getOrCreateCategory(
-            Text.translatable("config.qolmod.category.movement"));
+            Component.translatable("config.qolmod.category.movement"));
         movement.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.zoom"), QolConfig.getInstance().zoomEnabled)
+            Component.translatable("config.qolmod.zoom"), QolConfig.getInstance().zoomEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().zoomEnabled = v).build());
         movement.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.elytra"), QolConfig.getInstance().elytraDurabilityEnabled)
+            Component.translatable("config.qolmod.elytra"), QolConfig.getInstance().elytraDurabilityEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().elytraDurabilityEnabled = v).build());
 
         ConfigCategory mining = builder.getOrCreateCategory(
-            Text.translatable("config.qolmod.category.mining"));
+            Component.translatable("config.qolmod.category.mining"));
         mining.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.veinminer"), QolConfig.getInstance().veinMinerEnabled)
+            Component.translatable("config.qolmod.veinminer"), QolConfig.getInstance().veinMinerEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().veinMinerEnabled = v).build());
         mining.addEntry(eb.startIntSlider(
-            Text.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 256)
+            Component.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 256)
             .setDefaultValue(64).setSaveConsumer(v -> QolConfig.getInstance().veinMinerMaxBlocks = v).build());
         mining.addEntry(eb.startStrList(
-            Text.translatable("config.qolmod.veinminer.blocks"), QolConfig.getInstance().veinMinerBlocks)
+            Component.translatable("config.qolmod.veinminer.blocks"), QolConfig.getInstance().veinMinerBlocks)
             .setDefaultValue(new ArrayList<>(new QolConfig().veinMinerBlocks))
             .setSaveConsumer(v -> QolConfig.getInstance().veinMinerBlocks = v).build());
 
         ConfigCategory inventory = builder.getOrCreateCategory(
-            Text.translatable("config.qolmod.category.inventory"));
+            Component.translatable("config.qolmod.category.inventory"));
         inventory.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.autostack"), QolConfig.getInstance().autoStackEnabled)
+            Component.translatable("config.qolmod.autostack"), QolConfig.getInstance().autoStackEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().autoStackEnabled = v).build());
         inventory.addEntry(eb.startIntSlider(
-            Text.translatable("config.qolmod.autostack.radius"), QolConfig.getInstance().autoStackRadius, 1, 32)
+            Component.translatable("config.qolmod.autostack.radius"), QolConfig.getInstance().autoStackRadius, 1, 32)
             .setDefaultValue(10).setSaveConsumer(v -> QolConfig.getInstance().autoStackRadius = v).build());
         inventory.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.mousetweaks"), QolConfig.getInstance().mouseTweaksEnabled)
+            Component.translatable("config.qolmod.mousetweaks"), QolConfig.getInstance().mouseTweaksEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().mouseTweaksEnabled = v).build());
 
         ConfigCategory combat = builder.getOrCreateCategory(
-            Text.translatable("config.qolmod.category.combat"));
+            Component.translatable("config.qolmod.category.combat"));
         combat.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.infinitybow"), QolConfig.getInstance().infinityBowEnabled)
+            Component.translatable("config.qolmod.infinitybow"), QolConfig.getInstance().infinityBowEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().infinityBowEnabled = v).build());
         combat.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.enchantlimit"), QolConfig.getInstance().enchantLimitEnabled)
+            Component.translatable("config.qolmod.enchantlimit"), QolConfig.getInstance().enchantLimitEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().enchantLimitEnabled = v).build());
 
         ConfigCategory crafting = builder.getOrCreateCategory(
-            Text.translatable("config.qolmod.category.crafting"));
+            Component.translatable("config.qolmod.category.crafting"));
         crafting.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.slabrecipe"), QolConfig.getInstance().slabRecipeEnabled)
+            Component.translatable("config.qolmod.slabrecipe"), QolConfig.getInstance().slabRecipeEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().slabRecipeEnabled = v).build());
         crafting.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.furnacexp"), QolConfig.getInstance().furnaceXpEnabled)
+            Component.translatable("config.qolmod.furnacexp"), QolConfig.getInstance().furnaceXpEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().furnaceXpEnabled = v).build());
 
         return builder.build();

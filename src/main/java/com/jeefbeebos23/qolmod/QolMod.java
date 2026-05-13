@@ -20,10 +20,10 @@ public class QolMod implements ModInitializer {
         VeinMinerFeature.register();
         FurnaceXpFeature.register();
 
-        PayloadTypeRegistry.playC2S().register(KeyStatePayload.ID, KeyStatePayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(KeyStatePayload.ID, KeyStatePayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(KeyStatePayload.ID, (payload, context) ->
             context.server().execute(() ->
-                VeinMinerFeature.setActive(context.player().getUuid(), payload.veinMinerActive())
+                VeinMinerFeature.setActive(context.player().getUUID(), payload.veinMinerActive())
             )
         );
     }

@@ -7,35 +7,24 @@ import com.jeefbeebos23.qolmod.features.FurnaceXpRequestPayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.AbstractFurnaceScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.AbstractFurnaceScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractFurnaceScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Adds a stored-XP display and "Collect XP" button to all furnace screens
- * (Furnace, Blast Furnace, Smoker) when {@code furnaceXpEnabled} is true.
- *
- * BlockPos approach: The client does NOT have access to the furnace block pos via
- * the screen handler (the client-side handler holds a SimpleInventory, not the
- * block entity). Instead, both C2S packets carry no position — the server looks up
- * the furnace from the player's currently open screen handler, which IS the real
- * block entity on the server side.
- */
 @Environment(EnvType.CLIENT)
 @Mixin(AbstractFurnaceScreen.class)
-public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceScreenHandler>
-        extends HandledScreen<T> {
+public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceMenu>
+        extends AbstractContainerScreen<T> {
 
-    // Dummy constructor required by Mixin compiler (never called at runtime)
-    protected AbstractFurnaceScreenMixin(T handler, PlayerInventory inventory, Text title) {
+    protected AbstractFurnaceScreenMixin(T handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
@@ -43,23 +32,23 @@ public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceScreen
     private void onInit(CallbackInfo ci) {
         if (!QolConfig.getInstance().furnaceXpEnabled) return;
 
-        addDrawableChild(ButtonWidget.builder(
-                Text.translatable("qolmod.furnace.collect"),
+        addRenderableWidget(Button.builder(
+                Component.translatable("qolmod.furnace.collect"),
                 btn -> {
                     if (!QolConfig.getInstance().furnaceXpEnabled) return;
                     ClientPlayNetworking.send(new FurnaceXpCollectPayload());
                 }
-        ).dimensions(x + 97, y + 54, 72, 14).build());
+        ).pos(leftPos + 97, topPos + 54).size(72, 14).build());
 
         ClientPlayNetworking.send(new FurnaceXpRequestPayload());
     }
 
-    @Inject(method = "drawBackground", at = @At("TAIL"))
-    private void onDrawBackground(DrawContext context, float delta, int mouseX, int mouseY, CallbackInfo ci) {
+    @Inject(method = "extractBackground", at = @At("TAIL"))
+    private void onExtractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!QolConfig.getInstance().furnaceXpEnabled) return;
 
         int xp = FurnaceXpFeature.clientStoredXp;
-        String label = Text.translatable("qolmod.furnace.xp", xp).getString();
-        context.drawText(this.textRenderer, label, x + 97, y + 46, 0x404040, false);
+        String label = Component.translatable("qolmod.furnace.xp", xp).getString();
+        context.text(this.font, label, leftPos + 97, topPos + 46, 0x404040, false);
     }
 }

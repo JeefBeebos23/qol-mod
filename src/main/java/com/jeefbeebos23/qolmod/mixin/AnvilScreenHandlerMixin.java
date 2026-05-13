@@ -1,9 +1,9 @@
 package com.jeefbeebos23.qolmod.mixin;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
-import net.minecraft.entity.player.PlayerAbilities;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.screen.AnvilScreenHandler;
+import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AnvilMenu;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -11,35 +11,32 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * Removes the "Too Expensive!" cap on the anvil.
  *
- * Vanilla AnvilScreenHandler.updateResult() blocks the operation when
- * levelCost >= 40 by checking player.getAbilities().creativeMode — if not
- * in creative mode the output is cleared.  We redirect that abilities read
- * and, when the feature is enabled, pretend the player is always in creative
- * mode for this specific check so the clear never happens.
+ * Vanilla AnvilMenu.createResult() blocks the operation when
+ * levelCost >= 40 unless the player is in creative mode. We redirect
+ * that abilities read and pretend the player is always in creative mode
+ * for this specific check so the clear never happens.
  *
- * In Yarn 1.21.4, updateResult() contains two getAbilities() calls:
+ * In 26.1.2, createResult() contains two getAbilities() calls:
  *   ordinal 0: inside the enchantment-acceptance loop
- *              "this.player.getAbilities().creativeMode || itemStack.isOf(ENCHANTED_BOOK)"
  *   ordinal 1: the "Too Expensive" guard
- *              "if (levelCost >= 40 && !this.player.getAbilities().creativeMode)"
  *
  * We only redirect ordinal 1.
  */
-@Mixin(AnvilScreenHandler.class)
+@Mixin(AnvilMenu.class)
 public class AnvilScreenHandlerMixin {
 
     @Redirect(
-        method = "updateResult",
+        method = "createResult",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/player/PlayerEntity;getAbilities()Lnet/minecraft/entity/player/PlayerAbilities;",
+            target = "Lnet/minecraft/world/entity/player/Player;getAbilities()Lnet/minecraft/world/entity/player/Abilities;",
             ordinal = 1
         )
     )
-    private PlayerAbilities suppressTooExpensiveCreativeCheck(PlayerEntity player) {
+    private Abilities suppressTooExpensiveCreativeCheck(Player player) {
         if (QolConfig.getInstance().enchantLimitEnabled) {
-            PlayerAbilities fakeAbilities = new PlayerAbilities();
-            fakeAbilities.creativeMode = true;
+            Abilities fakeAbilities = new Abilities();
+            fakeAbilities.instabuild = true;
             return fakeAbilities;
         }
         return player.getAbilities();

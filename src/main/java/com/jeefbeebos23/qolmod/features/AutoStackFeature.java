@@ -3,17 +3,17 @@ package com.jeefbeebos23.qolmod.features;
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,26 +28,26 @@ public class AutoStackFeature {
             int x = screen.width / 2 + 60;
             int y = screen.height / 2 + 40;
 
-            Screens.getButtons(screen).add(
-                ButtonWidget.builder(Text.translatable("qolmod.quickstack"), btn -> {
-                    if (client.player != null) quickStack(client.player, client.world);
+            Screens.getWidgets(screen).add(
+                Button.builder(Component.translatable("qolmod.quickstack"), btn -> {
+                    if (client.player != null) quickStack(client.player, client.level);
                 })
-                .position(x, y)
+                .pos(x, y)
                 .size(60, 12)
                 .build()
             );
         });
     }
 
-    private static void quickStack(PlayerEntity player, World world) {
+    private static void quickStack(Player player, Level world) {
         if (world == null) return;
         int radius = QolConfig.getInstance().autoStackRadius;
-        PlayerInventory inv = player.getInventory();
+        Inventory inv = player.getInventory();
 
-        BlockPos playerPos = player.getBlockPos();
-        BlockPos.iterate(
-            playerPos.add(-radius, -radius, -radius),
-            playerPos.add(radius, radius, radius)
+        BlockPos playerPos = player.blockPosition();
+        BlockPos.betweenClosed(
+            playerPos.offset(-radius, -radius, -radius),
+            playerPos.offset(radius, radius, radius)
         ).forEach(pos -> {
             if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
                 stackToChest(inv, chest);
@@ -55,28 +55,28 @@ public class AutoStackFeature {
         });
     }
 
-    private static void stackToChest(PlayerInventory playerInv, Inventory chest) {
+    private static void stackToChest(Inventory playerInv, Container chest) {
         Set<Item> chestItems = new HashSet<>();
-        for (int i = 0; i < chest.size(); i++) {
-            ItemStack stack = chest.getStack(i);
+        for (int i = 0; i < chest.getContainerSize(); i++) {
+            ItemStack stack = chest.getItem(i);
             if (!stack.isEmpty()) chestItems.add(stack.getItem());
         }
 
-        for (int pi = 0; pi < playerInv.main.size(); pi++) {
-            ItemStack playerStack = playerInv.main.get(pi);
+        for (int pi = 0; pi < 36; pi++) {
+            ItemStack playerStack = playerInv.getItem(pi);
             if (playerStack.isEmpty()) continue;
             if (!chestItems.contains(playerStack.getItem())) continue;
 
-            for (int ci = 0; ci < chest.size(); ci++) {
-                ItemStack chestStack = chest.getStack(ci);
+            for (int ci = 0; ci < chest.getContainerSize(); ci++) {
+                ItemStack chestStack = chest.getItem(ci);
                 if (chestStack.isEmpty()) continue;
-                if (!ItemStack.areItemsEqual(chestStack, playerStack)) continue;
-                int space = chestStack.getMaxCount() - chestStack.getCount();
+                if (!ItemStack.isSameItem(chestStack, playerStack)) continue;
+                int space = chestStack.getMaxStackSize() - chestStack.getCount();
                 if (space <= 0) continue;
                 int transfer = Math.min(space, playerStack.getCount());
-                chestStack.increment(transfer);
-                playerStack.decrement(transfer);
-                chest.markDirty();
+                chestStack.grow(transfer);
+                playerStack.shrink(transfer);
+                chest.setChanged();
                 if (playerStack.isEmpty()) break;
             }
         }

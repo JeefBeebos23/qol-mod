@@ -2,10 +2,9 @@ package com.jeefbeebos23.qolmod.features;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,19 +16,19 @@ public class VeinMinerFeature {
 
     public static void register() {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-            if (!(world instanceof ServerWorld serverWorld)) return;
+            if (!(world instanceof ServerLevel serverLevel)) return;
             if (!QolConfig.getInstance().veinMinerEnabled) return;
-            if (!activePlayers.contains(player.getUuid())) return;
+            if (!activePlayers.contains(player.getUUID())) return;
 
-            String blockId = Registries.BLOCK.getId(state.getBlock()).toString();
+            String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
             if (!QolConfig.getInstance().veinMinerBlocks.contains(blockId)) return;
 
             Set<BlockPos> vein = findVein(pos, QolConfig.getInstance().veinMinerMaxBlocks,
-                n -> serverWorld.getBlockState(n).getBlock() == state.getBlock());
+                n -> serverLevel.getBlockState(n).getBlock() == state.getBlock());
             vein.remove(pos);
 
             for (BlockPos veinPos : vein) {
-                serverWorld.breakBlock(veinPos, true, player);
+                serverLevel.destroyBlock(veinPos, true, player);
             }
         });
     }
@@ -46,7 +45,7 @@ public class VeinMinerFeature {
                 for (int dy = -1; dy <= 1; dy++) {
                     for (int dz = -1; dz <= 1; dz++) {
                         if (dx == 0 && dy == 0 && dz == 0) continue;
-                        BlockPos n = p.add(dx, dy, dz);
+                        BlockPos n = p.offset(dx, dy, dz);
                         if (!result.contains(n) && isSameType.test(n)) {
                             result.add(n);
                             queue.add(n);

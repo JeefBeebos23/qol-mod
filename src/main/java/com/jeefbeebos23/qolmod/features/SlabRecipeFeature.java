@@ -1,17 +1,19 @@
 package com.jeefbeebos23.qolmod.features;
 
 import com.jeefbeebos23.qolmod.QolMod;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.ShapelessRecipe;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +40,6 @@ public class SlabRecipeFeature {
         Map.entry(Items.STONE_BRICK_SLAB, Items.STONE_BRICKS),
         Map.entry(Items.MOSSY_STONE_BRICK_SLAB, Items.MOSSY_STONE_BRICKS),
         Map.entry(Items.SANDSTONE_SLAB, Items.SANDSTONE),
-        Map.entry(Items.CUT_SANDSTONE_SLAB, Items.CUT_SANDSTONE),
         Map.entry(Items.SMOOTH_SANDSTONE_SLAB, Items.SMOOTH_SANDSTONE),
         Map.entry(Items.RED_SANDSTONE_SLAB, Items.RED_SANDSTONE),
         Map.entry(Items.CUT_RED_SANDSTONE_SLAB, Items.CUT_RED_SANDSTONE),
@@ -74,19 +75,23 @@ public class SlabRecipeFeature {
         Map.entry(Items.WAXED_OXIDIZED_CUT_COPPER_SLAB, Items.WAXED_OXIDIZED_CUT_COPPER)
     );
 
-    public static List<RecipeEntry<?>> buildRecipes() {
-        List<RecipeEntry<?>> entries = new ArrayList<>();
+    public static List<RecipeHolder<?>> buildRecipes() {
+        List<RecipeHolder<?>> entries = new ArrayList<>();
         SLAB_TO_BLOCK.forEach((slab, block) -> {
-            Identifier id = Identifier.of(QolMod.MOD_ID, Registries.ITEM.getId(slab).getPath() + "_to_block");
-            RegistryKey<net.minecraft.recipe.Recipe<?>> key = RegistryKey.of(RegistryKeys.RECIPE, id);
-            List<Ingredient> inputs = List.of(Ingredient.ofItems(slab), Ingredient.ofItems(slab));
+            Identifier id = Identifier.fromNamespaceAndPath(QolMod.MOD_ID,
+                BuiltInRegistries.ITEM.getKey(slab).getPath() + "_to_block");
+            ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
+            List<Ingredient> inputs = List.of(
+                Ingredient.of(slab),
+                Ingredient.of(slab)
+            );
             ShapelessRecipe recipe = new ShapelessRecipe(
-                "",
-                CraftingRecipeCategory.BUILDING,
-                new ItemStack(block, 1),
+                new Recipe.CommonInfo(true),
+                new CraftingRecipe.CraftingBookInfo(CraftingBookCategory.BUILDING, ""),
+                new ItemStackTemplate(block),
                 inputs
             );
-            entries.add(new RecipeEntry<>(key, recipe));
+            entries.add(new RecipeHolder<>(key, recipe));
         });
         return entries;
     }

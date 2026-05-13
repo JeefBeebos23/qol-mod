@@ -4,38 +4,42 @@ import com.jeefbeebos23.qolmod.features.AutoStackFeature;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
 import com.jeefbeebos23.qolmod.features.ZoomFeature;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class QolModClient implements ClientModInitializer {
 
-    private static KeyBinding veinMinerKey;
+    static final KeyMapping.Category QOL_CATEGORY =
+        KeyMapping.Category.register(Identifier.fromNamespaceAndPath(QolMod.MOD_ID, "key.category"));
+
+    private static KeyMapping veinMinerKey;
     private static boolean lastVeinMinerActive = false;
 
     @Override
     public void onInitializeClient() {
-        ZoomFeature.registerClient();
+        ZoomFeature.registerClient(QOL_CATEGORY);
         AutoStackFeature.registerClient();
         FurnaceXpFeature.registerClient();
 
-        veinMinerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        veinMinerKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
             "key.qolmod.veinminer",
-            InputUtil.Type.KEYSYM,
+            InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_GRAVE_ACCENT,
-            "key.category.qolmod"
+            QOL_CATEGORY
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
-            boolean active = veinMinerKey.isPressed();
+            boolean active = veinMinerKey.isDown();
             if (active != lastVeinMinerActive) {
                 lastVeinMinerActive = active;
                 ClientPlayNetworking.send(new KeyStatePayload(active));

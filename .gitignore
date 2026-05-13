@@ -1,0 +1,6 @@
+.worktrees/
+build/
+.gradle/
+*.class
+*.jar
+!gradle-wrapper.jar

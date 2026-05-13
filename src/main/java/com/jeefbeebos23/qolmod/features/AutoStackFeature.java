@@ -4,7 +4,6 @@ import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerEntity;
@@ -45,25 +44,18 @@ public class AutoStackFeature {
         int radius = QolConfig.getInstance().autoStackRadius;
         PlayerInventory inv = player.getInventory();
 
-        Set<Item> playerItems = new HashSet<>();
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getStack(i);
-            if (!stack.isEmpty()) playerItems.add(stack.getItem());
-        }
-
         BlockPos playerPos = player.getBlockPos();
         BlockPos.iterate(
             playerPos.add(-radius, -radius, -radius),
             playerPos.add(radius, radius, radius)
         ).forEach(pos -> {
             if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
-                stackToChest(inv, chest, playerItems);
+                stackToChest(inv, chest);
             }
         });
     }
 
-    private static void stackToChest(PlayerInventory playerInv, Inventory chest,
-                                      Set<Item> playerItems) {
+    private static void stackToChest(PlayerInventory playerInv, Inventory chest) {
         Set<Item> chestItems = new HashSet<>();
         for (int i = 0; i < chest.size(); i++) {
             ItemStack stack = chest.getStack(i);

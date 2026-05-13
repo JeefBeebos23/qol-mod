@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class QolConfig {
     private static final Path CONFIG_PATH =
         FabricLoader.getInstance().getConfigDir().resolve("qolmod.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static QolConfig INSTANCE = new QolConfig();
+    private static volatile QolConfig INSTANCE = new QolConfig();
 
     // Movement & Visual
     public boolean zoomEnabled = true;
@@ -33,7 +34,7 @@ public class QolConfig {
     // Mining
     public boolean veinMinerEnabled = true;
     public int veinMinerMaxBlocks = 64;
-    public List<String> veinMinerBlocks = Arrays.asList(
+    public List<String> veinMinerBlocks = new ArrayList<>(Arrays.asList(
         "minecraft:coal_ore", "minecraft:deepslate_coal_ore",
         "minecraft:iron_ore", "minecraft:deepslate_iron_ore",
         "minecraft:copper_ore", "minecraft:deepslate_copper_ore",
@@ -48,7 +49,7 @@ public class QolConfig {
         "minecraft:jungle_log", "minecraft:acacia_log", "minecraft:dark_oak_log",
         "minecraft:mangrove_log", "minecraft:cherry_log", "minecraft:bamboo_block",
         "minecraft:crimson_stem", "minecraft:warped_stem"
-    );
+    ));
 
     // Inventory
     public boolean autoStackEnabled = true;
@@ -70,7 +71,7 @@ public class QolConfig {
             try (Reader reader = Files.newBufferedReader(CONFIG_PATH)) {
                 INSTANCE = GSON.fromJson(reader, QolConfig.class);
                 if (INSTANCE == null) INSTANCE = new QolConfig();
-            } catch (IOException e) {
+            } catch (IOException | com.google.gson.JsonSyntaxException e) {
                 QolMod.LOGGER.error("Failed to load config, using defaults", e);
                 INSTANCE = new QolConfig();
             }
@@ -78,6 +79,12 @@ public class QolConfig {
     }
 
     public static void save() {
+        try {
+            Files.createDirectories(CONFIG_PATH.getParent());
+        } catch (IOException e) {
+            QolMod.LOGGER.error("Failed to create config directory", e);
+            return;
+        }
         try (Writer writer = Files.newBufferedWriter(CONFIG_PATH)) {
             GSON.toJson(INSTANCE, writer);
         } catch (IOException e) {
@@ -93,59 +100,58 @@ public class QolConfig {
             .setSavingRunnable(QolConfig::save);
 
         ConfigEntryBuilder eb = builder.entryBuilder();
-        QolConfig cfg = INSTANCE;
 
         ConfigCategory movement = builder.getOrCreateCategory(
             Text.translatable("config.qolmod.category.movement"));
         movement.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.zoom"), cfg.zoomEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.zoomEnabled = v).build());
+            Text.translatable("config.qolmod.zoom"), QolConfig.getInstance().zoomEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().zoomEnabled = v).build());
         movement.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.elytra"), cfg.elytraDurabilityEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.elytraDurabilityEnabled = v).build());
+            Text.translatable("config.qolmod.elytra"), QolConfig.getInstance().elytraDurabilityEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().elytraDurabilityEnabled = v).build());
 
         ConfigCategory mining = builder.getOrCreateCategory(
             Text.translatable("config.qolmod.category.mining"));
         mining.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.veinminer"), cfg.veinMinerEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.veinMinerEnabled = v).build());
+            Text.translatable("config.qolmod.veinminer"), QolConfig.getInstance().veinMinerEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().veinMinerEnabled = v).build());
         mining.addEntry(eb.startIntSlider(
-            Text.translatable("config.qolmod.veinminer.max"), cfg.veinMinerMaxBlocks, 1, 256)
-            .setDefaultValue(64).setSaveConsumer(v -> cfg.veinMinerMaxBlocks = v).build());
+            Text.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 256)
+            .setDefaultValue(64).setSaveConsumer(v -> QolConfig.getInstance().veinMinerMaxBlocks = v).build());
         mining.addEntry(eb.startStrList(
-            Text.translatable("config.qolmod.veinminer.blocks"), cfg.veinMinerBlocks)
-            .setDefaultValue(new QolConfig().veinMinerBlocks)
-            .setSaveConsumer(v -> cfg.veinMinerBlocks = v).build());
+            Text.translatable("config.qolmod.veinminer.blocks"), QolConfig.getInstance().veinMinerBlocks)
+            .setDefaultValue(new ArrayList<>(new QolConfig().veinMinerBlocks))
+            .setSaveConsumer(v -> QolConfig.getInstance().veinMinerBlocks = v).build());
 
         ConfigCategory inventory = builder.getOrCreateCategory(
             Text.translatable("config.qolmod.category.inventory"));
         inventory.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.autostack"), cfg.autoStackEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.autoStackEnabled = v).build());
+            Text.translatable("config.qolmod.autostack"), QolConfig.getInstance().autoStackEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().autoStackEnabled = v).build());
         inventory.addEntry(eb.startIntSlider(
-            Text.translatable("config.qolmod.autostack.radius"), cfg.autoStackRadius, 1, 32)
-            .setDefaultValue(10).setSaveConsumer(v -> cfg.autoStackRadius = v).build());
+            Text.translatable("config.qolmod.autostack.radius"), QolConfig.getInstance().autoStackRadius, 1, 32)
+            .setDefaultValue(10).setSaveConsumer(v -> QolConfig.getInstance().autoStackRadius = v).build());
         inventory.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.mousetweaks"), cfg.mouseTweaksEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.mouseTweaksEnabled = v).build());
+            Text.translatable("config.qolmod.mousetweaks"), QolConfig.getInstance().mouseTweaksEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().mouseTweaksEnabled = v).build());
 
         ConfigCategory combat = builder.getOrCreateCategory(
             Text.translatable("config.qolmod.category.combat"));
         combat.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.infinitybow"), cfg.infinityBowEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.infinityBowEnabled = v).build());
+            Text.translatable("config.qolmod.infinitybow"), QolConfig.getInstance().infinityBowEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().infinityBowEnabled = v).build());
         combat.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.enchantlimit"), cfg.enchantLimitEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.enchantLimitEnabled = v).build());
+            Text.translatable("config.qolmod.enchantlimit"), QolConfig.getInstance().enchantLimitEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().enchantLimitEnabled = v).build());
 
         ConfigCategory crafting = builder.getOrCreateCategory(
             Text.translatable("config.qolmod.category.crafting"));
         crafting.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.slabrecipe"), cfg.slabRecipeEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.slabRecipeEnabled = v).build());
+            Text.translatable("config.qolmod.slabrecipe"), QolConfig.getInstance().slabRecipeEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().slabRecipeEnabled = v).build());
         crafting.addEntry(eb.startBooleanToggle(
-            Text.translatable("config.qolmod.furnacexp"), cfg.furnaceXpEnabled)
-            .setDefaultValue(true).setSaveConsumer(v -> cfg.furnaceXpEnabled = v).build());
+            Text.translatable("config.qolmod.furnacexp"), QolConfig.getInstance().furnaceXpEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().furnaceXpEnabled = v).build());
 
         return builder.build();
     }

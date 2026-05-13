@@ -8,6 +8,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.ShapelessRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
@@ -73,17 +74,10 @@ public class SlabRecipeFeature {
         Map.entry(Items.WAXED_OXIDIZED_CUT_COPPER_SLAB, Items.WAXED_OXIDIZED_CUT_COPPER)
     );
 
-    public static void register() {
-        // Registration is handled by ServerRecipeManagerMixin which calls buildRecipes().
-    }
-
-    /**
-     * Builds all slab-to-block recipe entries to be injected into the recipe manager.
-     */
     public static List<RecipeEntry<?>> buildRecipes() {
         List<RecipeEntry<?>> entries = new ArrayList<>();
         SLAB_TO_BLOCK.forEach((slab, block) -> {
-            Identifier id = Identifier.of(QolMod.MOD_ID, net.minecraft.registry.Registries.ITEM.getId(slab).getPath() + "_to_block");
+            Identifier id = Identifier.of(QolMod.MOD_ID, Registries.ITEM.getId(slab).getPath() + "_to_block");
             RegistryKey<net.minecraft.recipe.Recipe<?>> key = RegistryKey.of(RegistryKeys.RECIPE, id);
             List<Ingredient> inputs = List.of(Ingredient.ofItems(slab), Ingredient.ofItems(slab));
             ShapelessRecipe recipe = new ShapelessRecipe(

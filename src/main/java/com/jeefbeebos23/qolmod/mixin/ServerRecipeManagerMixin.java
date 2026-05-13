@@ -25,7 +25,7 @@ public class ServerRecipeManagerMixin {
 
     @Inject(method = "apply(Lnet/minecraft/recipe/PreparedRecipes;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V",
             at = @At("RETURN"))
-    private void qolmod$injectSlabRecipes(PreparedRecipes preparedRecipes, ResourceManager resourceManager, Profiler profiler, CallbackInfo ci) {
+    private void injectSlabRecipes(PreparedRecipes preparedRecipes, ResourceManager resourceManager, Profiler profiler, CallbackInfo ci) {
         if (!QolConfig.getInstance().slabRecipeEnabled) return;
 
         Collection<RecipeEntry<?>> existing = this.preparedRecipes.recipes();

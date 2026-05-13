@@ -23,14 +23,42 @@ public abstract class HandledScreenMixin {
     @Shadow protected abstract void slotClicked(Slot slot, int slotId, int button, ContainerInput actionType);
     @Shadow protected AbstractContainerMenu menu;
 
+    // Shift+RMB drag: deposit 1 item from cursor into each hovered slot
     private final List<Slot> qol$dragSlots = new ArrayList<>();
     private boolean qol$isShiftRightDragging = false;
+
+    // Shift+LMB drag: quick-move (shift-click) all hovered slots
+    private final List<Slot> qol$leftDragSlots = new ArrayList<>();
+    private boolean qol$isShiftLeftDragging = false;
+
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void onMouseClicked(MouseButtonEvent event, boolean bl, CallbackInfoReturnable<Boolean> cir) {
+        if (!QolConfig.getInstance().mouseTweaksEnabled) return;
+        if (event.button() == 0 && Minecraft.getInstance().options.keyShift.isDown()
+                && menu.getCarried().isEmpty()) {
+            // Suppress the initial shift-click so the drag handles all slots uniformly.
+            // We record the slot here and process it on release.
+            Slot slot = getHoveredSlot(event.x(), event.y());
+            if (slot != null && slot.hasItem()) {
+                qol$leftDragSlots.add(slot);
+                qol$isShiftLeftDragging = true;
+                cir.setReturnValue(true);
+            }
+        }
+    }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void onDrag(MouseButtonEvent event, double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        if (event.button() == 1 && Minecraft.getInstance().options.keyShift.isDown()) {
+        boolean shiftHeld = Minecraft.getInstance().options.keyShift.isDown();
+        if (event.button() == 0 && shiftHeld && qol$isShiftLeftDragging) {
+            Slot slot = getHoveredSlot(event.x(), event.y());
+            if (slot != null && slot.hasItem() && !qol$leftDragSlots.contains(slot)) {
+                qol$leftDragSlots.add(slot);
+            }
+            cir.setReturnValue(true);
+        } else if (event.button() == 1 && shiftHeld) {
             Slot slot = getHoveredSlot(event.x(), event.y());
             if (slot != null && !qol$dragSlots.contains(slot)) {
                 qol$dragSlots.add(slot);
@@ -42,7 +70,15 @@ public abstract class HandledScreenMixin {
 
     @Inject(method = "mouseReleased", at = @At("HEAD"))
     private void onRelease(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
-        if (event.button() == 1 && qol$isShiftRightDragging) {
+        if (event.button() == 0 && qol$isShiftLeftDragging) {
+            for (Slot slot : qol$leftDragSlots) {
+                if (slot.hasItem()) {
+                    slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
+                }
+            }
+            qol$leftDragSlots.clear();
+            qol$isShiftLeftDragging = false;
+        } else if (event.button() == 1 && qol$isShiftRightDragging) {
             for (Slot slot : qol$dragSlots) {
                 if (menu.getCarried().isEmpty()) break;
                 slotClicked(slot, slot.index, 1, ContainerInput.PICKUP);

@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * ranged weapon has Infinity, mark the arrow as INTANGIBLE_PROJECTILE (no consumption).
  */
 @Mixin(RangedWeaponItem.class)
-public class BowItemMixin {
+public class RangedWeaponItemMixin {
 
     @Inject(
         method = "getProjectile",

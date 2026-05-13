@@ -46,28 +46,22 @@ public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceScreen
     // -------------------------------------------------------------------------
 
     @Inject(method = "init", at = @At("TAIL"))
-    private void qol$onInit(CallbackInfo ci) {
+    private void onInit(CallbackInfo ci) {
         if (!QolConfig.getInstance().furnaceXpEnabled) return;
 
-        // "Collect XP" button — positioned at the right side of the furnace background,
-        // just below the burn-progress arrow, above the player inventory divider.
-        // The furnace background is 176 wide; output slot is at +116,+35.
-        // We place the button at (x + 97, y + 54), size 72x14.
         addDrawableChild(ButtonWidget.builder(
                 Text.translatable("qolmod.furnace.collect"),
-                btn -> ClientPlayNetworking.send(new FurnaceXpCollectPayload())
+                btn -> {
+                    if (!QolConfig.getInstance().furnaceXpEnabled) return;
+                    ClientPlayNetworking.send(new FurnaceXpCollectPayload());
+                }
         ).dimensions(x + 97, y + 54, 72, 14).build());
 
-        // Ask the server for the current stored XP
         ClientPlayNetworking.send(new FurnaceXpRequestPayload());
     }
 
-    // -------------------------------------------------------------------------
-    // drawBackground: draw "Stored XP: N" text inside the furnace GUI
-    // -------------------------------------------------------------------------
-
     @Inject(method = "drawBackground", at = @At("TAIL"))
-    private void qol$onDrawBackground(DrawContext context, float delta, int mouseX, int mouseY, CallbackInfo ci) {
+    private void onDrawBackground(DrawContext context, float delta, int mouseX, int mouseY, CallbackInfo ci) {
         if (!QolConfig.getInstance().furnaceXpEnabled) return;
 
         int xp = FurnaceXpFeature.clientStoredXp;

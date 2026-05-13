@@ -17,11 +17,10 @@ public class ItemStackMixin {
         at = @At("HEAD"),
         cancellable = true
     )
-    private <T extends LivingEntity> void preventElytraDamage(
-            int amount, T entity, EquipmentSlot slot, CallbackInfo ci) {
-        ItemStack self = (ItemStack)(Object)this;
+    private void preventElytraDamage(
+            int amount, LivingEntity entity, EquipmentSlot slot, CallbackInfo ci) {
         if (QolConfig.getInstance().elytraDurabilityEnabled
-                && self.isOf(Items.ELYTRA)
+                && ((ItemStack)(Object)this).isOf(Items.ELYTRA)
                 && slot == EquipmentSlot.CHEST) {
             ci.cancel();
         }

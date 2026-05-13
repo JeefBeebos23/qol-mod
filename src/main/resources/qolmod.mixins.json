@@ -6,7 +6,8 @@
     "ItemStackMixin",
     "RangedWeaponItemMixin",
     "AnvilScreenHandlerMixin",
-    "AbstractFurnaceBlockEntityMixin"
+    "AbstractFurnaceBlockEntityMixin",
+    "ServerRecipeManagerMixin"
   ],
   "client": [
     "GameRendererMixin",

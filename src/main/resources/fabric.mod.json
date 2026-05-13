@@ -10,8 +10,7 @@
   "entrypoints": {
     "main":    ["com.jeefbeebos23.qolmod.QolMod"],
     "client":  ["com.jeefbeebos23.qolmod.QolModClient"],
-    "modmenu": ["com.jeefbeebos23.qolmod.ModMenuEntrypoint"],
-    "fabric-recipe-api-v1": ["com.jeefbeebos23.qolmod.features.SlabRecipeFeature"]
+    "modmenu": ["com.jeefbeebos23.qolmod.ModMenuEntrypoint"]
   },
   "mixins": ["qolmod.mixins.json"],
   "depends": {

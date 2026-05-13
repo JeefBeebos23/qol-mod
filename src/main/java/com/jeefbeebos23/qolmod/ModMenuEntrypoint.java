@@ -10,6 +10,6 @@ import net.fabricmc.api.Environment;
 public class ModMenuEntrypoint implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> null;
+        return QolConfig::createConfigScreen;
     }
 }

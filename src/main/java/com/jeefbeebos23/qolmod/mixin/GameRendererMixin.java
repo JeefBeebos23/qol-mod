@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
-    private void overrideFov(Camera camera, float tickDelta, boolean changingFov,
+    private void overrideFov(Camera camera,
+                              float tickDelta, boolean changingFov,
                               CallbackInfoReturnable<Float> cir) {
         if (ZoomFeature.isZooming()) {
-            float baseFov = cir.getReturnValue();
-            float target = ZoomFeature.zoomFov;
-            float smoothed = baseFov + (target - baseFov) * 0.35f;
-            cir.setReturnValue(smoothed);
+            cir.setReturnValue(ZoomFeature.getSmoothedFov(cir.getReturnValue()));
+        } else {
+            ZoomFeature.resetFov();  // reset so next zoom press starts from current FOV
         }
     }
 }

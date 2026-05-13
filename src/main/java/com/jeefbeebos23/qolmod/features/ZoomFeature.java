@@ -7,8 +7,9 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class ZoomFeature {
-    public static KeyBinding zoomKey;
-    public static float zoomFov = 30.0f;
+    private static KeyBinding zoomKey;
+    private static final float ZOOM_FOV = 30.0f;
+    private static float currentFov = -1f;  // -1 = needs initialization
 
     public static void registerClient() {
         zoomKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -23,5 +24,15 @@ public class ZoomFeature {
         return QolConfig.getInstance().zoomEnabled
             && zoomKey != null
             && zoomKey.isPressed();
+    }
+
+    public static float getSmoothedFov(float baseFov) {
+        if (currentFov < 0f) currentFov = baseFov;  // snap on first frame
+        currentFov = currentFov + (ZOOM_FOV - currentFov) * 0.35f;
+        return currentFov;
+    }
+
+    public static void resetFov() {
+        currentFov = -1f;
     }
 }

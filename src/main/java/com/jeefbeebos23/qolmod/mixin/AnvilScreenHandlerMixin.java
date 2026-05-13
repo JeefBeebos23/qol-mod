@@ -28,11 +28,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(AnvilScreenHandler.class)
 public class AnvilScreenHandlerMixin {
 
-    /**
-     * Redirect the second getAbilities() call inside updateResult() (ordinal = 1).
-     * When enchantLimitEnabled is true, return a fake PlayerAbilities with
-     * creativeMode = true so the "Too Expensive" branch never clears the output.
-     */
     @Redirect(
         method = "updateResult",
         at = @At(
@@ -41,10 +36,8 @@ public class AnvilScreenHandlerMixin {
             ordinal = 1
         )
     )
-    private PlayerAbilities qolmod$suppressTooExpensiveCreativeCheck(PlayerEntity player) {
+    private PlayerAbilities suppressTooExpensiveCreativeCheck(PlayerEntity player) {
         if (QolConfig.getInstance().enchantLimitEnabled) {
-            // Return a fake PlayerAbilities with creativeMode = true so the
-            // "!creativeMode" guard evaluates to false and the output is kept.
             PlayerAbilities fakeAbilities = new PlayerAbilities();
             fakeAbilities.creativeMode = true;
             return fakeAbilities;

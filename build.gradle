@@ -23,7 +23,11 @@ dependencies {
     modCompileOnlyApi "com.terraformersmc:modmenu:${project.modmenu_version}"
 
     testImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+test { useJUnitPlatform() }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21

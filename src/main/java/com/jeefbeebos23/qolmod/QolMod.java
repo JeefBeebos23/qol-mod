@@ -2,8 +2,11 @@ package com.jeefbeebos23.qolmod;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
+import com.jeefbeebos23.qolmod.features.KeyStatePayload;
 import com.jeefbeebos23.qolmod.features.VeinMinerFeature;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,5 +19,12 @@ public class QolMod implements ModInitializer {
         QolConfig.load();
         VeinMinerFeature.register();
         FurnaceXpFeature.register();
+
+        PayloadTypeRegistry.playC2S().register(KeyStatePayload.ID, KeyStatePayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(KeyStatePayload.ID, (payload, context) ->
+            context.server().execute(() ->
+                VeinMinerFeature.setActive(context.player().getUuid(), payload.veinMinerActive())
+            )
+        );
     }
 }

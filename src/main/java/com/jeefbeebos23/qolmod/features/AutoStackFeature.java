@@ -52,6 +52,7 @@ public class AutoStackFeature {
             if (playerStack.isEmpty()) continue;
             if (!chestItems.contains(playerStack.getItem())) continue;
 
+            // Phase 1: top off existing partial stacks
             for (int ci = 0; ci < chest.getContainerSize(); ci++) {
                 ItemStack chestStack = chest.getItem(ci);
                 if (chestStack.isEmpty()) continue;
@@ -60,6 +61,18 @@ public class AutoStackFeature {
                 if (space <= 0) continue;
                 int transfer = Math.min(space, playerStack.getCount());
                 chestStack.grow(transfer);
+                playerStack.shrink(transfer);
+                chest.setChanged();
+                if (playerStack.isEmpty()) break;
+            }
+
+            if (playerStack.isEmpty()) continue;
+
+            // Phase 2: spill into empty slots
+            for (int ci = 0; ci < chest.getContainerSize(); ci++) {
+                if (!chest.getItem(ci).isEmpty()) continue;
+                int transfer = Math.min(playerStack.getMaxStackSize(), playerStack.getCount());
+                chest.setItem(ci, playerStack.copyWithCount(transfer));
                 playerStack.shrink(transfer);
                 chest.setChanged();
                 if (playerStack.isEmpty()) break;

@@ -4,6 +4,7 @@ import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.AutoStackFeature;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
+import com.jeefbeebos23.qolmod.features.MouseTweaksFeature;
 import com.jeefbeebos23.qolmod.features.VeinMinerFeature;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -20,6 +21,7 @@ public class QolMod implements ModInitializer {
         QolConfig.load();
         VeinMinerFeature.register();
         AutoStackFeature.register();
+        MouseTweaksFeature.register();
         FurnaceXpFeature.register();
 
         PayloadTypeRegistry.serverboundPlay().register(KeyStatePayload.ID, KeyStatePayload.CODEC);

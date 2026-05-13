@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "com.jeefbeebos23.qolmod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ItemStackMixin",
+    "BowItemMixin",
+    "AnvilScreenHandlerMixin",
+    "AbstractFurnaceBlockEntityMixin"
+  ],
+  "client": [
+    "GameRendererMixin",
+    "AbstractFurnaceScreenMixin",
+    "HandledScreenMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

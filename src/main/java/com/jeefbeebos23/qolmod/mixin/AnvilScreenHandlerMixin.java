@@ -14,7 +14,7 @@ public class AnvilScreenHandlerMixin {
         method = "createResult",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials:()Z",
+            target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z",
             ordinal = 1
         )
     )

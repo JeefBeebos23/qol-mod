@@ -1,6 +1,7 @@
 package com.jeefbeebos23.qolmod.mixin;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
@@ -31,7 +32,7 @@ public abstract class HandledScreenMixin {
         Slot slot = getSlotAt(mouseX, mouseY);
         if (slot == null || !slot.hasStack()) return;
         if (!handler.getCursorStack().isEmpty()) return;
-        if (verticalAmount > 0) {
+        if (verticalAmount < 0) {
             onMouseClick(slot, slot.id, 0, SlotActionType.QUICK_MOVE);
             cir.setReturnValue(true);
         }
@@ -42,14 +43,10 @@ public abstract class HandledScreenMixin {
                         double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        if (button == 1 && net.minecraft.client.MinecraftClient.getInstance()
-                .options.sneakKey.isPressed()) {
+        if (button == 1 && MinecraftClient.getInstance().options.sneakKey.isPressed()) {
             Slot slot = getSlotAt(mouseX, mouseY);
             if (slot != null && !qol$dragSlots.contains(slot)) {
                 qol$dragSlots.add(slot);
-                if (!handler.getCursorStack().isEmpty()) {
-                    onMouseClick(slot, slot.id, 1, SlotActionType.PICKUP);
-                }
             }
             qol$isShiftRightDragging = true;
             cir.setReturnValue(true);
@@ -60,6 +57,10 @@ public abstract class HandledScreenMixin {
     private void onRelease(double mouseX, double mouseY, int button,
                            CallbackInfoReturnable<Boolean> cir) {
         if (button == 1 && qol$isShiftRightDragging) {
+            for (Slot slot : qol$dragSlots) {
+                if (handler.getCursorStack().isEmpty()) break;
+                onMouseClick(slot, slot.id, 1, SlotActionType.PICKUP);
+            }
             qol$dragSlots.clear();
             qol$isShiftRightDragging = false;
         }

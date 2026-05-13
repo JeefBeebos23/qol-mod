@@ -2,30 +2,18 @@ package com.jeefbeebos23.qolmod.features;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public class VeinMinerFeature {
-    public static KeyBinding veinMinerKey;
 
-    private static final Set<UUID> activePlayers = new HashSet<>();
-
-    public static void registerClient() {
-        veinMinerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.qolmod.veinminer",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_GRAVE_ACCENT,
-            "key.category.qolmod"
-        ));
-    }
+    private static final Set<UUID> activePlayers = ConcurrentHashMap.newKeySet();
 
     public static void register() {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {

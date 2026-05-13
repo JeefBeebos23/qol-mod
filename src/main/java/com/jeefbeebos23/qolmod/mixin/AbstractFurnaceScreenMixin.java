@@ -39,12 +39,6 @@ public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceScreen
         super(handler, inventory, title);
     }
 
-    // x and y are inherited as protected fields from HandledScreen — no @Shadow needed.
-
-    // -------------------------------------------------------------------------
-    // init: add "Collect XP" button and request current XP from server
-    // -------------------------------------------------------------------------
-
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         if (!QolConfig.getInstance().furnaceXpEnabled) return;
@@ -66,7 +60,6 @@ public abstract class AbstractFurnaceScreenMixin<T extends AbstractFurnaceScreen
 
         int xp = FurnaceXpFeature.clientStoredXp;
         String label = Text.translatable("qolmod.furnace.xp", xp).getString();
-        // Draw above the "Collect XP" button, inside the background panel
         context.drawText(this.textRenderer, label, x + 97, y + 46, 0x404040, false);
     }
 }

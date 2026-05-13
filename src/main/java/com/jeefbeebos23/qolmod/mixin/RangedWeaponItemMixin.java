@@ -38,13 +38,10 @@ public class RangedWeaponItemMixin {
             boolean multishot,
             CallbackInfoReturnable<ItemStack> cir) {
 
-        // Only apply when the feature is enabled, not multishot, and not in creative
-        // (creative mode already skips consumption via i == 0 path in vanilla)
         if (!QolConfig.getInstance().infinityBowEnabled) return;
         if (multishot) return;
         if (shooter.isInCreativeMode()) return;
 
-        // Check if the ranged weapon has the Infinity enchantment
         ItemEnchantmentsComponent enchantments = stack.getOrDefault(
                 DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
 
@@ -58,7 +55,6 @@ public class RangedWeaponItemMixin {
 
         if (!hasInfinity) return;
 
-        // Return a 1-count intangible copy — exactly what vanilla does when ammoUse == 0
         ItemStack intangible = projectileStack.copyWithCount(1);
         intangible.set(DataComponentTypes.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
         cir.setReturnValue(intangible);

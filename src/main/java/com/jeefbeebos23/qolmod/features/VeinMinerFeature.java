@@ -5,6 +5,9 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +31,10 @@ public class VeinMinerFeature {
             vein.remove(pos);
 
             for (BlockPos veinPos : vein) {
-                serverLevel.destroyBlock(veinPos, true, player);
+                BlockState veinState = serverLevel.getBlockState(veinPos);
+                BlockEntity veinBE = serverLevel.getBlockEntity(veinPos);
+                serverLevel.destroyBlock(veinPos, false, player);
+                Block.dropResources(veinState, serverLevel, pos, veinBE, player, player.getMainHandItem());
             }
         });
     }

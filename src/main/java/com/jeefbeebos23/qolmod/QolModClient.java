@@ -1,6 +1,5 @@
 package com.jeefbeebos23.qolmod;
 
-import com.jeefbeebos23.qolmod.features.AutoStackFeature;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
 import com.jeefbeebos23.qolmod.features.ZoomFeature;
@@ -27,7 +26,6 @@ public class QolModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ZoomFeature.registerClient(QOL_CATEGORY);
-        AutoStackFeature.registerClient();
         FurnaceXpFeature.registerClient();
 
         veinMinerKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(

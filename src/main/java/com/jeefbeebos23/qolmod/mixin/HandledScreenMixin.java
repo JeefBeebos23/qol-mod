@@ -26,19 +26,6 @@ public abstract class HandledScreenMixin {
     private final List<Slot> qol$dragSlots = new ArrayList<>();
     private boolean qol$isShiftRightDragging = false;
 
-    @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
-    private void onScroll(double mouseX, double mouseY, double horizontalAmount,
-                          double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
-        if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        Slot slot = getHoveredSlot(mouseX, mouseY);
-        if (slot == null || !slot.hasItem()) return;
-        if (!menu.getCarried().isEmpty()) return;
-        if (verticalAmount < 0) {
-            slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
-            cir.setReturnValue(true);
-        }
-    }
-
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void onDrag(MouseButtonEvent event, double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {

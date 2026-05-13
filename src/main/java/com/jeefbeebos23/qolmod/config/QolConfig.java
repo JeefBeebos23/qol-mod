@@ -59,6 +59,7 @@ public class QolConfig {
     // Combat & Enchanting
     public boolean infinityBowEnabled = true;
     public boolean enchantLimitEnabled = true;
+    public boolean mendingInfinityEnabled = true;
 
     // Crafting & Furnace
     public boolean slabRecipeEnabled = true;
@@ -143,6 +144,9 @@ public class QolConfig {
         combat.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.enchantlimit"), QolConfig.getInstance().enchantLimitEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().enchantLimitEnabled = v).build());
+        combat.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.mendinginfinity"), QolConfig.getInstance().mendingInfinityEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().mendingInfinityEnabled = v).build());
 
         ConfigCategory crafting = builder.getOrCreateCategory(
             Component.translatable("config.qolmod.category.crafting"));

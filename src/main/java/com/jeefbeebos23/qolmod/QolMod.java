@@ -1,6 +1,7 @@
 package com.jeefbeebos23.qolmod;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
+import com.jeefbeebos23.qolmod.features.AutoStackFeature;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
 import com.jeefbeebos23.qolmod.features.VeinMinerFeature;
@@ -18,6 +19,7 @@ public class QolMod implements ModInitializer {
     public void onInitialize() {
         QolConfig.load();
         VeinMinerFeature.register();
+        AutoStackFeature.register();
         FurnaceXpFeature.register();
 
         PayloadTypeRegistry.serverboundPlay().register(KeyStatePayload.ID, KeyStatePayload.CODEC);

@@ -8,12 +8,14 @@
     "AnvilScreenHandlerMixin",
     "AbstractFurnaceBlockEntityMixin",
     "AbstractFurnaceScreenHandlerAccessor",
-    "ServerRecipeManagerMixin"
+    "ServerRecipeManagerMixin",
+    "EnchantCompatibilityMixin"
   ],
   "client": [
     "GameRendererMixin",
     "AbstractFurnaceScreenMixin",
-    "HandledScreenMixin"
+    "HandledScreenMixin",
+    "InventoryScreenMixin"
   ],
   "injectors": { "defaultRequire": 1 }
 }

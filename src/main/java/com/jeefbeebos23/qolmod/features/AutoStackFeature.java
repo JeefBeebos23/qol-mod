@@ -1,18 +1,14 @@
 package com.jeefbeebos23.qolmod.features;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 import java.util.HashSet;
@@ -20,36 +16,25 @@ import java.util.Set;
 
 public class AutoStackFeature {
 
-    public static void registerClient() {
-        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            if (!(screen instanceof InventoryScreen)) return;
-            if (!QolConfig.getInstance().autoStackEnabled) return;
-
-            int x = screen.width / 2 + 60;
-            int y = screen.height / 2 + 40;
-
-            Screens.getWidgets(screen).add(
-                Button.builder(Component.translatable("qolmod.quickstack"), btn -> {
-                    if (client.player != null) quickStack(client.player, client.level);
-                })
-                .pos(x, y)
-                .size(60, 12)
-                .build()
-            );
-        });
+    public static void register() {
+        PayloadTypeRegistry.serverboundPlay().register(QuickStackPayload.ID, QuickStackPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(QuickStackPayload.ID, (payload, ctx) ->
+            ctx.server().execute(() -> {
+                if (!QolConfig.getInstance().autoStackEnabled) return;
+                quickStack(ctx.player());
+            })
+        );
     }
 
-    private static void quickStack(Player player, Level world) {
-        if (world == null) return;
+    private static void quickStack(ServerPlayer player) {
         int radius = QolConfig.getInstance().autoStackRadius;
         Inventory inv = player.getInventory();
-
         BlockPos playerPos = player.blockPosition();
         BlockPos.betweenClosed(
             playerPos.offset(-radius, -radius, -radius),
             playerPos.offset(radius, radius, radius)
         ).forEach(pos -> {
-            if (world.getBlockEntity(pos) instanceof ChestBlockEntity chest) {
+            if (player.level().getBlockEntity(pos) instanceof ChestBlockEntity chest) {
                 stackToChest(inv, chest);
             }
         });

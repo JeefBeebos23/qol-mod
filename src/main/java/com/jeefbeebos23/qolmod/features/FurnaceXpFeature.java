@@ -67,7 +67,7 @@ public class FurnaceXpFeature {
                     });
                 });
 
-                acc.setRecipesUsed(new Reference2IntOpenHashMap<>());
+                acc.getRecipesUsed().clear();
                 furnace.setChanged();
                 ServerPlayNetworking.send(ctx.player(), new FurnaceXpSyncPayload(0));
             })

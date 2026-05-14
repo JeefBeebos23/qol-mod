@@ -112,4 +112,4 @@ Placed under `assets/minecraft/` so Fabric loads it as a vanilla asset override.
 - Gradle + Fabric Loom
 - Java 21
 - Output: single JAR in `build/libs/`
-- Repo: standalone git repository at `coding_projects/rotatable-hoppers/`
+- Repo: standalone git repository at `coding_projects/rotatable-hoppers/` (GitHub: JeefBeebos23/omni-hopper)

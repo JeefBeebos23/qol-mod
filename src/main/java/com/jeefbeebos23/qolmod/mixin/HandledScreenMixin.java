@@ -3,7 +3,6 @@ package com.jeefbeebos23.qolmod.mixin;
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.MouseTweaksMoveOnePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,7 +36,7 @@ public abstract class HandledScreenMixin {
     private void onDrag(MouseButtonEvent event, double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        boolean shiftHeld = Minecraft.getInstance().options.keyShift.isDown();
+        boolean shiftHeld = event.hasShiftDown();
         boolean carriedEmpty = menu.getCarried().isEmpty();
 
         if (event.button() == 0 && shiftHeld && carriedEmpty) {

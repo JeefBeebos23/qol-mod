@@ -14,8 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class HandledScreenMixin {
@@ -24,54 +25,44 @@ public abstract class HandledScreenMixin {
     @Shadow protected abstract void slotClicked(Slot slot, int slotId, int button, ContainerInput actionType);
     @Shadow protected AbstractContainerMenu menu;
 
-    // Shift+LMB drag: quick-move (shift-click) each hovered slot to the opposite container
-    private final List<Slot> qol$leftDragSlots = new ArrayList<>();
-    private boolean qol$isShiftLeftDragging = false;
+    private final Set<Integer> qol$lmbDraggedIndices = new HashSet<>();
+    private final Set<Integer> qol$rmbDraggedIndices = new HashSet<>();
 
-    // Shift+RMB drag: move exactly 1 item from each hovered slot to the opposite container
-    private final List<Integer> qol$rightDragIndices = new ArrayList<>();
-    private boolean qol$isShiftRightDragging = false;
+    // Intercept Shift+RMB click to move 1 item instead of vanilla's full-stack quick-move
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void onMouseClicked(MouseButtonEvent event, boolean bl, CallbackInfoReturnable<Boolean> cir) {
+        if (!QolConfig.getInstance().mouseTweaksEnabled) return;
+        if (event.button() != 1 || !event.hasShiftDown() || !menu.getCarried().isEmpty()) return;
+        Slot slot = getHoveredSlot(event.x(), event.y());
+        if (slot == null || !slot.hasItem()) return;
+        qol$rmbDraggedIndices.add(slot.index);
+        ClientPlayNetworking.send(new MouseTweaksMoveOnePayload(List.of(slot.index)));
+        cir.setReturnValue(true);
+    }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void onDrag(MouseButtonEvent event, double deltaX, double deltaY,
                         CallbackInfoReturnable<Boolean> cir) {
         if (!QolConfig.getInstance().mouseTweaksEnabled) return;
-        boolean shiftHeld = event.hasShiftDown();
-        boolean carriedEmpty = menu.getCarried().isEmpty();
+        if (!event.hasShiftDown() || !menu.getCarried().isEmpty()) return;
 
-        if (event.button() == 0 && shiftHeld && carriedEmpty) {
-            Slot slot = getHoveredSlot(event.x(), event.y());
-            if (slot != null && slot.hasItem() && !qol$leftDragSlots.contains(slot)) {
-                qol$leftDragSlots.add(slot);
-            }
-            qol$isShiftLeftDragging = true;
+        Slot slot = getHoveredSlot(event.x(), event.y());
+        if (event.button() == 0) {
             cir.setReturnValue(true);
-        } else if (event.button() == 1 && shiftHeld && carriedEmpty) {
-            Slot slot = getHoveredSlot(event.x(), event.y());
-            if (slot != null && slot.hasItem() && !qol$rightDragIndices.contains(slot.index)) {
-                qol$rightDragIndices.add(slot.index);
+            if (slot != null && slot.hasItem() && qol$lmbDraggedIndices.add(slot.index)) {
+                slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
             }
-            qol$isShiftRightDragging = true;
+        } else if (event.button() == 1) {
             cir.setReturnValue(true);
+            if (slot != null && slot.hasItem() && qol$rmbDraggedIndices.add(slot.index)) {
+                ClientPlayNetworking.send(new MouseTweaksMoveOnePayload(List.of(slot.index)));
+            }
         }
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"))
     private void onRelease(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
-        if (event.button() == 0 && qol$isShiftLeftDragging) {
-            for (Slot slot : qol$leftDragSlots) {
-                if (slot.hasItem()) {
-                    slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
-                }
-            }
-            qol$leftDragSlots.clear();
-            qol$isShiftLeftDragging = false;
-        } else if (event.button() == 1 && qol$isShiftRightDragging) {
-            if (!qol$rightDragIndices.isEmpty()) {
-                ClientPlayNetworking.send(new MouseTweaksMoveOnePayload(new ArrayList<>(qol$rightDragIndices)));
-            }
-            qol$rightDragIndices.clear();
-            qol$isShiftRightDragging = false;
-        }
+        if (event.button() == 0) qol$lmbDraggedIndices.clear();
+        else if (event.button() == 1) qol$rmbDraggedIndices.clear();
     }
 }

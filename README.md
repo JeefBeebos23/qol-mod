@@ -9,7 +9,7 @@ A personal Minecraft QoL mod with 9 quality-of-life features, all toggleable in-
 - **Auto-Stack to Chests** — button in your inventory to quickly push items to nearby chests
 - **Elytra Durability** — toggle elytra durability loss on/off
 - **Infinity Bow (All Arrows)** — Infinity enchantment works on tipped and spectral arrows too
-- **Mouse Tweaks** — scroll over a slot to quick-move it; shift+right-drag to spread items
+- **Inventory Mouse Improvements** — scroll over a slot to quick-move it; shift+right-drag to spread items
 - **Slab → Block Recipe** — craft two slabs of the same type back into a full block
 - **Remove Enchant Limit** — removes the "Too Expensive!" cap in the anvil
 - **Furnace XP Display** — see stored XP in furnaces and collect it with a button

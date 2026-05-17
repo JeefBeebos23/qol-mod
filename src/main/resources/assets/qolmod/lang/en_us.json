@@ -22,8 +22,6 @@
   "key.qolmod.veinminer": "Vein Miner",
   "key.category.qolmod": "QoL Mod",
   "qolmod.quickstack": "Quick Stack",
-  "qolmod.restock": "Restock",
-  "config.qolmod.restock": "Auto-Restock from Chests",
   "qolmod.furnace.xp": "Stored XP: %d",
   "qolmod.furnace.collect": "Collect XP"
 }

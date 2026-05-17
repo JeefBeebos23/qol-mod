@@ -54,6 +54,7 @@ public class QolConfig {
     // Inventory
     public boolean autoStackEnabled = true;
     public int autoStackRadius = 10;
+    public boolean restockEnabled = true;
     public boolean mouseTweaksEnabled = true;
 
     // Combat & Enchanting
@@ -132,6 +133,9 @@ public class QolConfig {
         inventory.addEntry(eb.startIntSlider(
             Component.translatable("config.qolmod.autostack.radius"), QolConfig.getInstance().autoStackRadius, 1, 32)
             .setDefaultValue(10).setSaveConsumer(v -> QolConfig.getInstance().autoStackRadius = v).build());
+        inventory.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.restock"), QolConfig.getInstance().restockEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().restockEnabled = v).build());
         inventory.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.mousetweaks"), QolConfig.getInstance().mouseTweaksEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().mouseTweaksEnabled = v).build());

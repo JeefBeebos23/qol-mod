@@ -2,6 +2,7 @@ package com.jeefbeebos23.qolmod.mixin;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.QuickStackPayload;
+import com.jeefbeebos23.qolmod.features.RestockPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -28,6 +29,18 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
             Component.translatable("qolmod.quickstack"),
             btn -> ClientPlayNetworking.send(new QuickStackPayload()))
             .pos(this.leftPos + this.imageWidth + 4, this.topPos + 60)
+            .size(70, 20)
+            .build()
+        );
+    }
+
+    @Inject(method = "init", at = @At("TAIL"))
+    private void addRestockButton(CallbackInfo ci) {
+        if (!QolConfig.getInstance().restockEnabled) return;
+        addRenderableWidget(Button.builder(
+            Component.translatable("qolmod.restock"),
+            btn -> ClientPlayNetworking.send(new RestockPayload()))
+            .pos(this.leftPos + this.imageWidth + 4, this.topPos + 82)
             .size(70, 20)
             .build()
         );

@@ -2,6 +2,7 @@ package com.jeefbeebos23.qolmod;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.AutoStackFeature;
+import com.jeefbeebos23.qolmod.features.RestockFeature;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
 import com.jeefbeebos23.qolmod.features.MouseTweaksFeature;
@@ -21,6 +22,7 @@ public class QolMod implements ModInitializer {
         QolConfig.load();
         VeinMinerFeature.register();
         AutoStackFeature.register();
+        RestockFeature.register();
         MouseTweaksFeature.register();
         FurnaceXpFeature.register();
 

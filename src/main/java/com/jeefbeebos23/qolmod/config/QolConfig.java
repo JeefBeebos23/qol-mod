@@ -33,6 +33,7 @@ public class QolConfig {
 
     // Mining
     public boolean veinMinerEnabled = true;
+    public boolean treeReplantEnabled = true;
     public int veinMinerMaxBlocks = 64;
     public List<String> veinMinerBlocks = new ArrayList<>(Arrays.asList(
         "minecraft:coal_ore", "minecraft:deepslate_coal_ore",
@@ -116,6 +117,9 @@ public class QolConfig {
         mining.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.veinminer"), QolConfig.getInstance().veinMinerEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().veinMinerEnabled = v).build());
+        mining.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.treereplant"), QolConfig.getInstance().treeReplantEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().treeReplantEnabled = v).build());
         mining.addEntry(eb.startIntSlider(
             Component.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 256)
             .setDefaultValue(64).setSaveConsumer(v -> QolConfig.getInstance().veinMinerMaxBlocks = v).build());

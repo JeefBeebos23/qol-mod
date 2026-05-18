@@ -21,6 +21,14 @@ import java.util.List;
 
 public class InventorySorter {
 
+    // Wood types in display order; each gets its own category bucket so they don't mix.
+    private static final List<String> WOOD_TYPES = List.of(
+        "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+        "mangrove", "cherry", "bamboo", "pale_oak", "crimson", "warped"
+    );
+
+    // ── public sort entry points ──────────────────────────────────────────────
+
     public static void sort(ServerPlayer player, List<String> hotbarLayout) {
         Inventory inv = player.getInventory();
 
@@ -50,9 +58,7 @@ public class InventorySorter {
             }
         }
 
-        pool.sort(Comparator.comparingInt(InventorySorter::categoryOrder)
-            .thenComparingInt(s -> -tierScore(s))
-            .thenComparingInt(s -> -enchantCount(s)));
+        sortPool(pool);
 
         int idx = 0;
         for (int slot = 9; slot < 36 && idx < pool.size(); slot++) {
@@ -77,13 +83,159 @@ public class InventorySorter {
             container.setItem(i, ItemStack.EMPTY);
         }
 
-        pool.sort(Comparator.comparingInt(InventorySorter::categoryOrder)
-            .thenComparingInt(s -> -tierScore(s))
-            .thenComparingInt(s -> -enchantCount(s)));
+        sortPool(pool);
 
         for (int i = 0; i < pool.size(); i++) container.setItem(i, pool.get(i));
         container.setChanged();
         chestMenu.broadcastChanges();
+    }
+
+    // ── sorting ───────────────────────────────────────────────────────────────
+
+    private static void sortPool(List<ItemStack> pool) {
+        pool.sort(
+            Comparator.comparingInt(InventorySorter::categoryOrder)
+                .thenComparing(InventorySorter::subSortKey)
+                .thenComparingInt(s -> -tierScore(s))
+                .thenComparingInt(s -> -enchantCount(s))
+        );
+    }
+
+    /**
+     * Primary category buckets:
+     *   0   weapons
+     *   1   tools
+     *   2   armor
+     *   3   food
+     *   4   ores (ore blocks + raw ores + ancient debris)
+     *   5   plants (saplings, flowers, leaves, bamboo plant, crops, etc.)
+     *  100+ wood items, one bucket per wood type (100=oak, 101=spruce, …)
+     *  200  non-wood building blocks
+     *  300  misc
+     */
+    static int categoryOrder(ItemStack stack) {
+        if (isWeapon(stack)) return 0;
+        if (isTool(stack))   return 1;
+        if (isArmor(stack))  return 2;
+        if (isFood(stack))   return 3;
+        if (isOre(stack))    return 4;
+        if (isPlant(stack))  return 5;
+        int wood = woodTypeIndex(stack);
+        if (wood >= 0) return 100 + wood;
+        if (stack.getItem() instanceof BlockItem) return 200;
+        return 300;
+    }
+
+    /**
+     * Secondary sort key within the same category.
+     * Alphabetical by item registry path with one normalization:
+     * deepslate ores are sorted immediately after their surface counterparts
+     * so coal_ore and deepslate_coal_ore end up adjacent.
+     */
+    static String subSortKey(ItemStack stack) {
+        String id = itemPath(stack);
+        if (id.startsWith("deepslate_") && id.endsWith("_ore")) {
+            // "deepslate_coal_ore" → sort as "coal_ore~" (tilde > letters, after "coal_ore")
+            return id.substring("deepslate_".length()) + "~";
+        }
+        return id;
+    }
+
+    // ── category predicates ───────────────────────────────────────────────────
+
+    private static boolean isWeapon(ItemStack stack) {
+        Item item = stack.getItem();
+        return stack.is(ItemTags.SWORDS)
+            || item == Items.MACE
+            || item == Items.BOW
+            || item == Items.CROSSBOW
+            || item == Items.TRIDENT;
+    }
+
+    private static boolean isTool(ItemStack stack) {
+        Item item = stack.getItem();
+        return stack.is(ItemTags.PICKAXES)
+            || stack.is(ItemTags.AXES)
+            || stack.is(ItemTags.SHOVELS)
+            || stack.is(ItemTags.HOES)
+            || item == Items.SHEARS
+            || item == Items.FLINT_AND_STEEL
+            || item == Items.FISHING_ROD;
+    }
+
+    private static boolean isArmor(ItemStack stack) {
+        Equippable eq = stack.get(DataComponents.EQUIPPABLE);
+        return eq != null && isArmorSlot(eq.slot());
+    }
+
+    private static boolean isFood(ItemStack stack) {
+        return stack.get(DataComponents.FOOD) != null;
+    }
+
+    private static boolean isOre(ItemStack stack) {
+        String id = itemPath(stack);
+        return id.endsWith("_ore")
+            || id.equals("ancient_debris")
+            || (id.startsWith("raw_") && (id.contains("iron") || id.contains("copper") || id.contains("gold")));
+    }
+
+    private static boolean isPlant(ItemStack stack) {
+        Item item = stack.getItem();
+        return stack.is(ItemTags.SAPLINGS)
+            || stack.is(ItemTags.SMALL_FLOWERS)
+            || stack.is(ItemTags.LEAVES)
+            || item == Items.SUNFLOWER
+            || item == Items.LILAC
+            || item == Items.ROSE_BUSH
+            || item == Items.PEONY
+            || item == Items.TALL_GRASS
+            || item == Items.LARGE_FERN
+            || item == Items.PITCHER_PLANT
+            || item == Items.WHEAT_SEEDS
+            || item == Items.PUMPKIN_SEEDS
+            || item == Items.MELON_SEEDS
+            || item == Items.BEETROOT_SEEDS
+            || item == Items.TORCHFLOWER_SEEDS
+            || item == Items.PITCHER_POD
+            || item == Items.BAMBOO
+            || item == Items.CACTUS
+            || item == Items.SUGAR_CANE
+            || item == Items.KELP
+            || item == Items.LILY_PAD
+            || item == Items.VINE
+            || item == Items.NETHER_WART
+            || item == Items.MOSS_BLOCK
+            || item == Items.MOSS_CARPET
+            || item == Items.AZALEA
+            || item == Items.FLOWERING_AZALEA
+            || item == Items.SPORE_BLOSSOM
+            || item == Items.RED_MUSHROOM
+            || item == Items.BROWN_MUSHROOM
+            || item == Items.RED_MUSHROOM_BLOCK
+            || item == Items.BROWN_MUSHROOM_BLOCK
+            || item == Items.MUSHROOM_STEM;
+    }
+
+    /**
+     * Returns the index into WOOD_TYPES (0=oak, 1=spruce, …) or -1 if not a wood item.
+     * Plants like saplings and bamboo-the-item are already caught by isPlant and never reach here.
+     */
+    private static int woodTypeIndex(ItemStack stack) {
+        String id = itemPath(stack);
+        // Normalize "stripped_" prefix so stripped_oak_log → oak_log
+        if (id.startsWith("stripped_")) id = id.substring("stripped_".length());
+        for (int i = 0; i < WOOD_TYPES.size(); i++) {
+            String wood = WOOD_TYPES.get(i);
+            if (id.startsWith(wood + "_") || id.equals(wood)) return i;
+        }
+        return -1;
+    }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    private static String itemPath(ItemStack stack) {
+        var key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return key != null ? key.getPath() : "";
     }
 
     private static ItemStack findBestForLayout(List<ItemStack> pool, String savedId) {
@@ -139,29 +291,14 @@ public class InventorySorter {
         };
     }
 
+    private static boolean isArmorSlot(EquipmentSlot slot) {
+        return slot == EquipmentSlot.HEAD || slot == EquipmentSlot.CHEST
+            || slot == EquipmentSlot.LEGS || slot == EquipmentSlot.FEET;
+    }
+
     static int tierScore(ItemStack stack) { return stack.getMaxDamage(); }
 
     static int enchantCount(ItemStack stack) {
         return stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).size();
-    }
-
-    static int categoryOrder(ItemStack stack) {
-        Item item = stack.getItem();
-        if (stack.is(ItemTags.SWORDS) || item == Items.MACE || item == Items.BOW
-                || item == Items.CROSSBOW || item == Items.TRIDENT) return 0;
-        if (stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.AXES)
-                || stack.is(ItemTags.SHOVELS) || stack.is(ItemTags.HOES)
-                || item == Items.SHEARS || item == Items.FLINT_AND_STEEL
-                || item == Items.FISHING_ROD) return 1;
-        if (stack.get(DataComponents.EQUIPPABLE) != null
-                && isArmorSlot(stack.get(DataComponents.EQUIPPABLE).slot())) return 2;
-        if (stack.get(DataComponents.FOOD) != null) return 3;
-        if (item instanceof BlockItem) return 4;
-        return 5;
-    }
-
-    private static boolean isArmorSlot(EquipmentSlot slot) {
-        return slot == EquipmentSlot.HEAD || slot == EquipmentSlot.CHEST
-            || slot == EquipmentSlot.LEGS || slot == EquipmentSlot.FEET;
     }
 }

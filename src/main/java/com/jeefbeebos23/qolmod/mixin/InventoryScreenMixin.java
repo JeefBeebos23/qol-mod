@@ -70,12 +70,16 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
                 btn -> {
                     var mc = Minecraft.getInstance();
                     if (mc.player == null) return;
-                    List<String> layout = new ArrayList<>(9);
+                    List<String> layout = new ArrayList<>(10);
                     for (int i = 0; i < 9; i++) {
                         ItemStack stack = mc.player.getInventory().getItem(i);
                         var regId = BuiltInRegistries.ITEM.getKey(stack.getItem());
                         layout.add(stack.isEmpty() || regId == null ? null : regId.toString());
                     }
+                    // Index 9 = offhand (inventory slot 40)
+                    ItemStack offhand = mc.player.getInventory().getItem(40);
+                    var offhandId = BuiltInRegistries.ITEM.getKey(offhand.getItem());
+                    layout.add(offhand.isEmpty() || offhandId == null ? null : offhandId.toString());
                     HotbarLayout.save(layout);
                 })
                 .pos(bx, this.topPos + 132)

@@ -30,7 +30,7 @@ public class HotbarLayout {
             String json = Files.readString(CONFIG_PATH);
             Type type = new TypeToken<List<String>>() {}.getType();
             List<String> layout = GSON.fromJson(json, type);
-            if (layout == null || layout.size() != 9) return emptyLayout();
+            if (layout == null || layout.size() != 10) return emptyLayout();
             return layout;
         } catch (Exception ignored) {
             return emptyLayout();
@@ -38,6 +38,6 @@ public class HotbarLayout {
     }
 
     public static List<String> emptyLayout() {
-        return new ArrayList<>(Arrays.asList(new String[9]));
+        return new ArrayList<>(Arrays.asList(new String[10]));
     }
 }

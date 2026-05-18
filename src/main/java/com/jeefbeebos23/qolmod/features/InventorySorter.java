@@ -38,6 +38,10 @@ public class InventorySorter {
             if (!stack.isEmpty()) pool.add(stack);
             inv.setItem(i, ItemStack.EMPTY);
         }
+        // Include offhand slot (40) in the pool
+        ItemStack offhandStack = inv.getItem(40);
+        if (!offhandStack.isEmpty()) pool.add(offhandStack);
+        inv.setItem(40, ItemStack.EMPTY);
 
         for (int slot = 0; slot < 9; slot++) {
             String savedId = slot < hotbarLayout.size() ? hotbarLayout.get(slot) : null;
@@ -45,6 +49,16 @@ public class InventorySorter {
             ItemStack best = findBestForLayout(pool, savedId);
             if (best != null) {
                 inv.setItem(slot, best);
+                pool.remove(best);
+            }
+        }
+
+        // Restore offhand from layout index 9
+        String offhandId = hotbarLayout.size() > 9 ? hotbarLayout.get(9) : null;
+        if (offhandId != null) {
+            ItemStack best = findBestForLayout(pool, offhandId);
+            if (best != null) {
+                inv.setItem(40, best);
                 pool.remove(best);
             }
         }

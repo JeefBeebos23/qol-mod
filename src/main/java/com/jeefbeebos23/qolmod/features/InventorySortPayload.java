@@ -13,8 +13,8 @@ import java.util.List;
 public record InventorySortPayload(List<String> hotbarLayout) implements CustomPacketPayload {
 
     public InventorySortPayload {
-        if (hotbarLayout.size() != 9)
-            throw new IllegalArgumentException("hotbarLayout must have exactly 9 entries, got " + hotbarLayout.size());
+        if (hotbarLayout.size() != 10)
+            throw new IllegalArgumentException("hotbarLayout must have exactly 10 entries, got " + hotbarLayout.size());
         hotbarLayout = Collections.unmodifiableList(hotbarLayout);
     }
 
@@ -31,7 +31,7 @@ public record InventorySortPayload(List<String> hotbarLayout) implements CustomP
             },
             buf -> {
                 List<String> layout = new ArrayList<>(9);
-                for (int i = 0; i < 9; i++) layout.add(buf.readBoolean() ? buf.readUtf(256) : null);
+                for (int i = 0; i < 10; i++) layout.add(buf.readBoolean() ? buf.readUtf(256) : null);
                 return new InventorySortPayload(layout);
             }
         );

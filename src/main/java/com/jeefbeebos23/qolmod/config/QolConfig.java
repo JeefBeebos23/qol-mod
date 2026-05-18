@@ -58,6 +58,7 @@ public class QolConfig {
     public boolean autoStackEnabled = true;
     public int autoStackRadius = 10;
     public boolean mouseTweaksEnabled = true;
+    public boolean autoRefillEnabled = true;
 
     // Combat & Enchanting
     public boolean infinityBowEnabled = true;
@@ -161,6 +162,9 @@ public class QolConfig {
         inventory.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.inventory.sort"), QolConfig.getInstance().inventorySortEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().inventorySortEnabled = v).build());
+        inventory.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.autorefill"), QolConfig.getInstance().autoRefillEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().autoRefillEnabled = v).build());
 
         ConfigCategory combat = builder.getOrCreateCategory(
             Component.translatable("config.qolmod.category.combat"));

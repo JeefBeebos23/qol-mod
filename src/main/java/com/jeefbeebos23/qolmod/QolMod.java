@@ -1,6 +1,7 @@
 package com.jeefbeebos23.qolmod;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
+import com.jeefbeebos23.qolmod.features.AutoRefillFeature;
 import com.jeefbeebos23.qolmod.features.AutoStackFeature;
 import com.jeefbeebos23.qolmod.features.ChestSortPayload;
 import com.jeefbeebos23.qolmod.features.CropReplantFeature;
@@ -31,6 +32,7 @@ public class QolMod implements ModInitializer {
         TreeReplantFeature.register();
         CropReplantFeature.register();
         AutoStackFeature.register();
+        AutoRefillFeature.register();
         MouseTweaksFeature.register();
         FurnaceXpFeature.register();
         LibraryVillagerFeature.register();

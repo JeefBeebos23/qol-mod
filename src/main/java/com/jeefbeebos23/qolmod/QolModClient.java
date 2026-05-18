@@ -1,5 +1,6 @@
 package com.jeefbeebos23.qolmod;
 
+import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.ChestSortPayload;
 import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
 import com.jeefbeebos23.qolmod.features.KeyStatePayload;
@@ -28,6 +29,7 @@ public class QolModClient implements ClientModInitializer {
         KeyMapping.Category.register(Identifier.fromNamespaceAndPath(QolMod.MOD_ID, "key.category"));
 
     private static KeyMapping veinMinerKey;
+    private static KeyMapping configKey;
     private static boolean lastVeinMinerActive = false;
 
     @Override
@@ -58,12 +60,22 @@ public class QolModClient implements ClientModInitializer {
             QOL_CATEGORY
         ));
 
+        configKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+            "key.qolmod.config",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            QOL_CATEGORY
+        ));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
             boolean active = veinMinerKey.isDown();
             if (active != lastVeinMinerActive) {
                 lastVeinMinerActive = active;
                 ClientPlayNetworking.send(new KeyStatePayload(active));
+            }
+            if (configKey.consumeClick()) {
+                client.setScreen(QolConfig.createConfigScreen(client.screen));
             }
         });
     }

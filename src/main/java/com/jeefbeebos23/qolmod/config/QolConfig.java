@@ -137,7 +137,7 @@ public class QolConfig {
             Component.translatable("config.qolmod.fastleafdecay"), QolConfig.getInstance().fastLeafDecayEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().fastLeafDecayEnabled = v).build());
         mining.addEntry(eb.startIntSlider(
-            Component.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 256)
+            Component.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 2048)
             .setDefaultValue(64).setSaveConsumer(v -> QolConfig.getInstance().veinMinerMaxBlocks = v).build());
         mining.addEntry(eb.startStrList(
             Component.translatable("config.qolmod.veinminer.blocks"), QolConfig.getInstance().veinMinerBlocks)

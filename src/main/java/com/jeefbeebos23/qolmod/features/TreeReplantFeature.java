@@ -6,11 +6,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
+import java.util.Set;
 
 public class TreeReplantFeature {
 
@@ -24,6 +27,11 @@ public class TreeReplantFeature {
         Map.entry(Blocks.CHERRY_LOG,   Blocks.CHERRY_SAPLING),
         Map.entry(Blocks.MANGROVE_LOG, Blocks.MANGROVE_PROPAGULE),
         Map.entry(Blocks.PALE_OAK_LOG, Blocks.PALE_OAK_SAPLING)
+    );
+
+    // These log types can form 2x2 trees requiring 4 saplings
+    private static final Set<Block> BIG_TREE_LOGS = Set.of(
+        Blocks.SPRUCE_LOG, Blocks.DARK_OAK_LOG, Blocks.JUNGLE_LOG
     );
 
     public static void register() {
@@ -48,20 +56,66 @@ public class TreeReplantFeature {
             if (limit < 0) return;
             if (!serverLevel.getBlockState(plantPos).isAir()) return;
 
-            // Find the sapling item in the player's inventory
-            var saplingItem = sapling.asItem();
-            Inventory inv = player.getInventory();
-            int slot = -1;
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                if (inv.getItem(i).getItem() == saplingItem) {
-                    slot = i;
-                    break;
+            Item saplingItem = sapling.asItem();
+
+            // For big tree types, try to plant a 2x2 if the footprint is clear
+            if (BIG_TREE_LOGS.contains(state.getBlock())) {
+                BlockPos origin = detect2x2Origin(serverLevel, plantPos);
+                if (origin != null && consumeSaplings(player.getInventory(), saplingItem, 4)) {
+                    for (int dx = 0; dx < 2; dx++) {
+                        for (int dz = 0; dz < 2; dz++) {
+                            serverLevel.setBlock(origin.offset(dx, 0, dz), sapling.defaultBlockState(), 3);
+                        }
+                    }
+                    return;
                 }
             }
-            if (slot == -1) return;
 
-            inv.getItem(slot).shrink(1);
-            serverLevel.setBlock(plantPos, sapling.defaultBlockState(), 3);
+            // Fallback: single sapling
+            if (consumeSaplings(player.getInventory(), saplingItem, 1)) {
+                serverLevel.setBlock(plantPos, sapling.defaultBlockState(), 3);
+            }
         });
+    }
+
+    // Returns the NW corner of a 2x2 footprint that includes plantPos, or null if no clear 2x2 exists.
+    private static BlockPos detect2x2Origin(ServerLevel level, BlockPos plantPos) {
+        // plantPos may be any of the 4 corners — try each possible NW origin
+        int[][] offsets = { {0, 0}, {-1, 0}, {0, -1}, {-1, -1} };
+        for (int[] off : offsets) {
+            BlockPos origin = plantPos.offset(off[0], 0, off[1]);
+            if (is2x2Clear(level, origin, plantPos.getY())) return origin;
+        }
+        return null;
+    }
+
+    private static boolean is2x2Clear(ServerLevel level, BlockPos origin, int y) {
+        for (int dx = 0; dx < 2; dx++) {
+            for (int dz = 0; dz < 2; dz++) {
+                BlockPos cell = new BlockPos(origin.getX() + dx, y, origin.getZ() + dz);
+                if (!level.getBlockState(cell).isAir()) return false;
+                BlockState below = level.getBlockState(cell.below());
+                if (!below.is(BlockTags.DIRT) && below.getBlock() != Blocks.FARMLAND) return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean consumeSaplings(Inventory inv, Item saplingItem, int needed) {
+        int found = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (inv.getItem(i).getItem() == saplingItem) found += inv.getItem(i).getCount();
+        }
+        if (found < needed) return false;
+        int remaining = needed;
+        for (int i = 0; i < inv.getContainerSize() && remaining > 0; i++) {
+            ItemStack stack = inv.getItem(i);
+            if (stack.getItem() == saplingItem) {
+                int take = Math.min(remaining, stack.getCount());
+                stack.shrink(take);
+                remaining -= take;
+            }
+        }
+        return true;
     }
 }

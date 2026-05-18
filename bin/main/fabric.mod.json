@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "qolmod",
+  "version": "${version}",
+  "name": "QoL Mod",
+  "description": "A collection of quality-of-life tweaks.",
+  "authors": ["JeefBeebos23"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main":    ["com.jeefbeebos23.qolmod.QolMod"],
+    "client":  ["com.jeefbeebos23.qolmod.QolModClient"],
+    "modmenu": ["com.jeefbeebos23.qolmod.ModMenuEntrypoint"]
+  },
+  "mixins": ["qolmod.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "cloth-config": "*",
+    "minecraft": "~26.1.2"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

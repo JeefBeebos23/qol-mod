@@ -67,6 +67,14 @@ public class QolConfig {
     public boolean slabRecipeEnabled = true;
     public boolean furnaceXpEnabled = true;
 
+    // Inventory (pull/sort)
+    public boolean inventoryRestockEnabled = true;
+    public boolean inventorySortEnabled = true;
+
+    // Villager
+    public boolean noVillagerRestock = true;
+    public boolean libraryVillagerEnabled = true;
+
     public static QolConfig getInstance() { return INSTANCE; }
 
     public static void load() {
@@ -143,6 +151,12 @@ public class QolConfig {
         inventory.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.mousetweaks"), QolConfig.getInstance().mouseTweaksEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().mouseTweaksEnabled = v).build());
+        inventory.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.inventory.restock"), QolConfig.getInstance().inventoryRestockEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().inventoryRestockEnabled = v).build());
+        inventory.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.inventory.sort"), QolConfig.getInstance().inventorySortEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().inventorySortEnabled = v).build());
 
         ConfigCategory combat = builder.getOrCreateCategory(
             Component.translatable("config.qolmod.category.combat"));
@@ -164,6 +178,15 @@ public class QolConfig {
         crafting.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.furnacexp"), QolConfig.getInstance().furnaceXpEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().furnaceXpEnabled = v).build());
+
+        ConfigCategory villager = builder.getOrCreateCategory(
+            Component.translatable("config.qolmod.category.villager"));
+        villager.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.villager.norestock"), QolConfig.getInstance().noVillagerRestock)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().noVillagerRestock = v).build());
+        villager.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.libraryvillager"), QolConfig.getInstance().libraryVillagerEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().libraryVillagerEnabled = v).build());
 
         return builder.build();
     }

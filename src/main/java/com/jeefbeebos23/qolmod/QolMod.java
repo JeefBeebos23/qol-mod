@@ -2,10 +2,16 @@ package com.jeefbeebos23.qolmod;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.AutoStackFeature;
-import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
-import com.jeefbeebos23.qolmod.features.KeyStatePayload;
-import com.jeefbeebos23.qolmod.features.MouseTweaksFeature;
+import com.jeefbeebos23.qolmod.features.ChestSortPayload;
 import com.jeefbeebos23.qolmod.features.CropReplantFeature;
+import com.jeefbeebos23.qolmod.features.FurnaceXpFeature;
+import com.jeefbeebos23.qolmod.features.InventorySortPayload;
+import com.jeefbeebos23.qolmod.features.InventorySorter;
+import com.jeefbeebos23.qolmod.features.KeyStatePayload;
+import com.jeefbeebos23.qolmod.features.LibraryVillagerFeature;
+import com.jeefbeebos23.qolmod.features.MouseTweaksFeature;
+import com.jeefbeebos23.qolmod.features.RestockFeature;
+import com.jeefbeebos23.qolmod.features.RestockPayload;
 import com.jeefbeebos23.qolmod.features.TreeReplantFeature;
 import com.jeefbeebos23.qolmod.features.VeinMinerFeature;
 import net.fabricmc.api.ModInitializer;
@@ -27,12 +33,29 @@ public class QolMod implements ModInitializer {
         AutoStackFeature.register();
         MouseTweaksFeature.register();
         FurnaceXpFeature.register();
+        LibraryVillagerFeature.register();
 
         PayloadTypeRegistry.serverboundPlay().register(KeyStatePayload.ID, KeyStatePayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(KeyStatePayload.ID, (payload, context) ->
             context.server().execute(() ->
                 VeinMinerFeature.setActive(context.player().getUUID(), payload.veinMinerActive())
             )
+        );
+
+        PayloadTypeRegistry.serverboundPlay().register(RestockPayload.TYPE, RestockPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(RestockPayload.TYPE, (payload, context) ->
+            context.server().execute(() -> RestockFeature.restock(context.player()))
+        );
+
+        PayloadTypeRegistry.serverboundPlay().register(InventorySortPayload.TYPE, InventorySortPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(InventorySortPayload.TYPE, (payload, context) ->
+            context.server().execute(() ->
+                InventorySorter.sort(context.player(), payload.hotbarLayout()))
+        );
+
+        PayloadTypeRegistry.serverboundPlay().register(ChestSortPayload.TYPE, ChestSortPayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(ChestSortPayload.TYPE, (payload, context) ->
+            context.server().execute(() -> InventorySorter.sortChest(context.player()))
         );
     }
 }

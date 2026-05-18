@@ -4,7 +4,6 @@ import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -29,10 +28,26 @@ public class TreeReplantFeature {
         Map.entry(Blocks.PALE_OAK_LOG, Blocks.PALE_OAK_SAPLING)
     );
 
-    // These log types can form 2x2 trees requiring 4 saplings
+    // Logs that can form 2x2 trees requiring 4 saplings
     private static final Set<Block> BIG_TREE_LOGS = Set.of(
         Blocks.SPRUCE_LOG, Blocks.DARK_OAK_LOG, Blocks.JUNGLE_LOG
     );
+
+    // All blocks that can be the ground a tree grows on
+    private static boolean isGround(BlockState state) {
+        Block b = state.getBlock();
+        return b == Blocks.DIRT
+            || b == Blocks.GRASS_BLOCK
+            || b == Blocks.PODZOL
+            || b == Blocks.MYCELIUM
+            || b == Blocks.COARSE_DIRT
+            || b == Blocks.ROOTED_DIRT
+            || b == Blocks.FARMLAND
+            || b == Blocks.MOSS_BLOCK
+            || b == Blocks.MUD
+            || b == Blocks.GRAVEL   // acacia can spawn on gravel
+            || b == Blocks.SAND;    // desert trees
+    }
 
     public static void register() {
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
@@ -49,7 +64,7 @@ public class TreeReplantFeature {
             int limit = 64;
             while (limit-- > 0) {
                 BlockState below = serverLevel.getBlockState(plantPos.below());
-                if (below.is(BlockTags.DIRT) || below.is(Blocks.FARMLAND)) break;
+                if (isGround(below)) break;
                 if (!below.isAir()) return;
                 plantPos = plantPos.below();
             }
@@ -94,8 +109,7 @@ public class TreeReplantFeature {
             for (int dz = 0; dz < 2; dz++) {
                 BlockPos cell = new BlockPos(origin.getX() + dx, y, origin.getZ() + dz);
                 if (!level.getBlockState(cell).isAir()) return false;
-                BlockState below = level.getBlockState(cell.below());
-                if (!below.is(BlockTags.DIRT) && below.getBlock() != Blocks.FARMLAND) return false;
+                if (!isGround(level.getBlockState(cell.below()))) return false;
             }
         }
         return true;

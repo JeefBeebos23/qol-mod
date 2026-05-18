@@ -14,7 +14,8 @@
     "RotatableHopperBlockEntityMixin",
     "HopperInteractionMixin",
     "MerchantOfferMixin",
-    "VillagerMixin"
+    "VillagerMixin",
+    "FastLeafDecayMixin"
   ],
   "client": [
     "GameRendererMixin",

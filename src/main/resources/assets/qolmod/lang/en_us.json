@@ -33,5 +33,6 @@
   "config.qolmod.inventory.restock": "Inventory Restock",
   "config.qolmod.inventory.sort": "Inventory Sort",
   "config.qolmod.villager.norestock": "Disable Villager Restock",
-  "config.qolmod.libraryvillager": "Library Villager"
+  "config.qolmod.libraryvillager": "Library Villager",
+  "config.qolmod.fastleafdecay": "Fast Leaf Decay"
 }

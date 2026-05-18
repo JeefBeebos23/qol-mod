@@ -9,6 +9,7 @@
   "config.qolmod.elytra": "Disable Elytra Durability",
   "config.qolmod.veinminer": "Vein Miner",
   "config.qolmod.treereplant": "Auto Tree Replant",
+  "config.qolmod.cropreplant": "Auto Crop Replant",
   "config.qolmod.veinminer.max": "Max Blocks",
   "config.qolmod.veinminer.blocks": "Block List",
   "config.qolmod.autostack": "Auto-Stack to Chests",

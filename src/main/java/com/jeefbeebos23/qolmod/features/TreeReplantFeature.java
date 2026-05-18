@@ -2,7 +2,7 @@ package com.jeefbeebos23.qolmod.features;
 
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,9 +34,19 @@ public class TreeReplantFeature {
             Block sapling = LOG_TO_SAPLING.get(state.getBlock());
             if (sapling == null) return;
 
-            // Only replant at the base of a tree (ground must be below)
-            BlockState below = serverLevel.getBlockState(pos.below());
-            if (!below.is(BlockTags.DIRT) && !below.is(Blocks.FARMLAND)) return;
+            // Scan downward through the now-cleared column to find ground.
+            // VeinMiner destroys blocks without firing AFTER, so the column
+            // is already air when this handler runs.
+            BlockPos plantPos = pos;
+            int limit = 64;
+            while (limit-- > 0) {
+                BlockState below = serverLevel.getBlockState(plantPos.below());
+                if (below.is(BlockTags.DIRT) || below.is(Blocks.FARMLAND)) break;
+                if (!below.isAir()) return;
+                plantPos = plantPos.below();
+            }
+            if (limit < 0) return;
+            if (!serverLevel.getBlockState(plantPos).isAir()) return;
 
             // Find the sapling item in the player's inventory
             var saplingItem = sapling.asItem();
@@ -51,7 +61,7 @@ public class TreeReplantFeature {
             if (slot == -1) return;
 
             inv.getItem(slot).shrink(1);
-            serverLevel.setBlock(pos, sapling.defaultBlockState(), 3);
+            serverLevel.setBlock(plantPos, sapling.defaultBlockState(), 3);
         });
     }
 }

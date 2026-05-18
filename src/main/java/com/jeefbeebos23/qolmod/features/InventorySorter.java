@@ -107,12 +107,40 @@ public class InventorySorter {
     // ── sorting ───────────────────────────────────────────────────────────────
 
     private static void sortPool(List<ItemStack> pool) {
+        compactPool(pool);
         pool.sort(
             Comparator.comparingInt(InventorySorter::categoryOrder)
                 .thenComparing(InventorySorter::subSortKey)
                 .thenComparingInt(s -> -tierScore(s))
                 .thenComparingInt(s -> -enchantCount(s))
         );
+    }
+
+    // Merge partial stacks of identical items into full stacks before sorting.
+    private static void compactPool(List<ItemStack> pool) {
+        List<ItemStack> groups = new ArrayList<>();
+        for (ItemStack stack : pool) {
+            if (stack.isEmpty()) continue;
+            boolean merged = false;
+            for (ItemStack group : groups) {
+                if (ItemStack.isSameItemSameComponents(group, stack)) {
+                    group.grow(stack.getCount());
+                    merged = true;
+                    break;
+                }
+            }
+            if (!merged) groups.add(stack.copy());
+        }
+        pool.clear();
+        for (ItemStack group : groups) {
+            int max = group.getMaxStackSize();
+            while (group.getCount() > max) {
+                ItemStack full = group.copyWithCount(max);
+                pool.add(full);
+                group.shrink(max);
+            }
+            pool.add(group);
+        }
     }
 
     /**

@@ -15,8 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AutoRefillFeature {
 
-    // Item IDs for slots [0-8] (hotbar) and [9] (offhand), null = empty
-    private static final Map<UUID, String[]> prevState = new ConcurrentHashMap<>();
+    private static final Map<UUID, Snapshot> prevState = new ConcurrentHashMap<>();
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(AutoRefillFeature::onTick);
@@ -34,27 +33,29 @@ public class AutoRefillFeature {
 
     private static void tick(ServerPlayer player) {
         Inventory inv = player.getInventory();
-        String[] prev = prevState.get(player.getUUID());
-        String[] curr = snapshot(inv);
+        Snapshot prev = prevState.get(player.getUUID());
+        Snapshot curr = Snapshot.of(inv);
 
         if (prev != null) {
             boolean changed = false;
             for (int i = 0; i < 9; i++) {
-                if (prev[i] != null && curr[i] == null && doRefill(inv, i, prev[i])) {
-                    changed = true;
+                if (prev.ids[i] != null && curr.ids[i] == null
+                        && curr.totalOf(prev.ids[i]) < prev.totalOf(prev.ids[i])) {
+                    if (doRefill(inv, i, prev.ids[i])) changed = true;
                 }
             }
-            // Offhand is index 9, inventory slot 40
-            if (prev[9] != null && curr[9] == null && doRefill(inv, 40, prev[9])) {
-                changed = true;
+            // Offhand is inventory slot 40, stored at index 40 in snapshot
+            if (prev.ids[40] != null && curr.ids[40] == null
+                    && curr.totalOf(prev.ids[40]) < prev.totalOf(prev.ids[40])) {
+                if (doRefill(inv, 40, prev.ids[40])) changed = true;
             }
-            if (changed) curr = snapshot(inv);
+            if (changed) curr = Snapshot.of(inv);
         }
 
         prevState.put(player.getUUID(), curr);
     }
 
-    // Finds the first stack of itemId in main inventory (slots 9-35) and moves it to targetSlot.
+    // Moves the first matching stack from main inventory (slots 9-35) to targetSlot.
     private static boolean doRefill(Inventory inv, int targetSlot, String itemId) {
         for (int i = 9; i < 36; i++) {
             ItemStack stack = inv.getItem(i);
@@ -69,18 +70,31 @@ public class AutoRefillFeature {
         return false;
     }
 
-    private static String[] snapshot(Inventory inv) {
-        String[] state = new String[10];
-        for (int i = 0; i < 9; i++) {
-            state[i] = itemId(inv.getItem(i));
-        }
-        state[9] = itemId(inv.getItem(40));
-        return state;
-    }
+    // Snapshot of all 41 inventory slots (0-40) with item IDs and counts.
+    private record Snapshot(String[] ids, int[] counts) {
 
-    private static String itemId(ItemStack stack) {
-        if (stack.isEmpty()) return null;
-        Identifier key = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        return key != null ? key.toString() : null;
+        static Snapshot of(Inventory inv) {
+            String[] ids = new String[41];
+            int[] counts = new int[41];
+            for (int i = 0; i < 41; i++) {
+                ItemStack s = inv.getItem(i);
+                if (!s.isEmpty()) {
+                    Identifier key = BuiltInRegistries.ITEM.getKey(s.getItem());
+                    if (key != null) {
+                        ids[i] = key.toString();
+                        counts[i] = s.getCount();
+                    }
+                }
+            }
+            return new Snapshot(ids, counts);
+        }
+
+        int totalOf(String itemId) {
+            int total = 0;
+            for (int i = 0; i < 41; i++) {
+                if (itemId.equals(ids[i])) total += counts[i];
+            }
+            return total;
+        }
     }
 }

@@ -3,6 +3,8 @@ package com.jeefbeebos23.qolmod.mixin;
 import com.jeefbeebos23.qolmod.config.QolConfig;
 import com.jeefbeebos23.qolmod.features.HotbarLayout;
 import com.jeefbeebos23.qolmod.features.InventorySortPayload;
+import com.jeefbeebos23.qolmod.features.MagicMirrorButton;
+import com.jeefbeebos23.qolmod.features.MagicMirrorPayload;
 import com.jeefbeebos23.qolmod.features.QuickStackPayload;
 import com.jeefbeebos23.qolmod.features.RestockPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -54,6 +56,13 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
                 .size(70, 20)
                 .build()
             );
+        }
+
+        if (QolConfig.getInstance().magicMirrorEnabled) {
+            addRenderableWidget(new MagicMirrorButton(
+                this.leftPos + 81, this.height / 2 - 22,
+                btn -> ClientPlayNetworking.send(new MagicMirrorPayload())
+            ));
         }
 
         if (QolConfig.getInstance().inventorySortEnabled) {

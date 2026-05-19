@@ -36,6 +36,7 @@ public class QolConfig {
     public boolean treeReplantEnabled = true;
     public boolean cropReplantEnabled = true;
     public boolean fastLeafDecayEnabled = true;
+    public boolean fortuneBonemealEnabled = true;
     public int veinMinerMaxBlocks = 64;
     public List<String> veinMinerBlocks = new ArrayList<>(Arrays.asList(
         "minecraft:coal_ore", "minecraft:deepslate_coal_ore",
@@ -72,6 +73,7 @@ public class QolConfig {
     // Inventory (pull/sort)
     public boolean inventoryRestockEnabled = true;
     public boolean inventorySortEnabled = true;
+    public boolean magicMirrorEnabled = true;
 
     // Villager
     public boolean noVillagerRestock = true;
@@ -137,6 +139,9 @@ public class QolConfig {
         mining.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.fastleafdecay"), QolConfig.getInstance().fastLeafDecayEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().fastLeafDecayEnabled = v).build());
+        mining.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.fortunebonemeal"), QolConfig.getInstance().fortuneBonemealEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().fortuneBonemealEnabled = v).build());
         mining.addEntry(eb.startIntSlider(
             Component.translatable("config.qolmod.veinminer.max"), QolConfig.getInstance().veinMinerMaxBlocks, 1, 2048)
             .setDefaultValue(64).setSaveConsumer(v -> QolConfig.getInstance().veinMinerMaxBlocks = v).build());
@@ -165,6 +170,9 @@ public class QolConfig {
         inventory.addEntry(eb.startBooleanToggle(
             Component.translatable("config.qolmod.autorefill"), QolConfig.getInstance().autoRefillEnabled)
             .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().autoRefillEnabled = v).build());
+        inventory.addEntry(eb.startBooleanToggle(
+            Component.translatable("config.qolmod.magicmirror"), QolConfig.getInstance().magicMirrorEnabled)
+            .setDefaultValue(true).setSaveConsumer(v -> QolConfig.getInstance().magicMirrorEnabled = v).build());
 
         ConfigCategory combat = builder.getOrCreateCategory(
             Component.translatable("config.qolmod.category.combat"));

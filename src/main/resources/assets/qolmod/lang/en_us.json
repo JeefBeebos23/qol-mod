@@ -36,5 +36,8 @@
   "config.qolmod.villager.norestock": "Disable Villager Restock",
   "config.qolmod.libraryvillager": "Library Villager",
   "config.qolmod.fastleafdecay": "Fast Leaf Decay",
-  "config.qolmod.autorefill": "Auto-Refill Hotbar/Offhand"
+  "config.qolmod.autorefill": "Auto-Refill Hotbar/Offhand",
+  "config.qolmod.fortunebonemeal": "Fortune on Pumpkins & Bonemeal for Sugarcane/Cactus",
+  "config.qolmod.magicmirror": "Magic Mirror (Return to Spawn)",
+  "qolmod.magicmirror": "Return to Spawn"
 }

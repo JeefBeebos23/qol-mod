@@ -33,8 +33,9 @@ public class AutoRefillFeature {
 
     private static void tick(ServerPlayer player) {
         Inventory inv = player.getInventory();
+        ItemStack cursor = player.containerMenu.getCarried();
         Snapshot prev = prevState.get(player.getUUID());
-        Snapshot curr = Snapshot.of(inv);
+        Snapshot curr = Snapshot.of(inv, cursor);
 
         if (prev != null) {
             boolean changed = false;
@@ -49,7 +50,7 @@ public class AutoRefillFeature {
                     && curr.totalOf(prev.ids[40]) < prev.totalOf(prev.ids[40])) {
                 if (doRefill(inv, 40, prev.ids[40])) changed = true;
             }
-            if (changed) curr = Snapshot.of(inv);
+            if (changed) curr = Snapshot.of(inv, player.containerMenu.getCarried());
         }
 
         prevState.put(player.getUUID(), curr);
@@ -70,10 +71,10 @@ public class AutoRefillFeature {
         return false;
     }
 
-    // Snapshot of all 41 inventory slots (0-40) with item IDs and counts.
-    private record Snapshot(String[] ids, int[] counts) {
+    // Snapshot of all 41 inventory slots (0-40) plus cursor item.
+    private record Snapshot(String[] ids, int[] counts, String cursorId, int cursorCount) {
 
-        static Snapshot of(Inventory inv) {
+        static Snapshot of(Inventory inv, ItemStack cursor) {
             String[] ids = new String[41];
             int[] counts = new int[41];
             for (int i = 0; i < 41; i++) {
@@ -86,7 +87,16 @@ public class AutoRefillFeature {
                     }
                 }
             }
-            return new Snapshot(ids, counts);
+            String cursorId = null;
+            int cursorCount = 0;
+            if (!cursor.isEmpty()) {
+                Identifier key = BuiltInRegistries.ITEM.getKey(cursor.getItem());
+                if (key != null) {
+                    cursorId = key.toString();
+                    cursorCount = cursor.getCount();
+                }
+            }
+            return new Snapshot(ids, counts, cursorId, cursorCount);
         }
 
         int totalOf(String itemId) {
@@ -94,6 +104,7 @@ public class AutoRefillFeature {
             for (int i = 0; i < 41; i++) {
                 if (itemId.equals(ids[i])) total += counts[i];
             }
+            if (itemId.equals(cursorId)) total += cursorCount;
             return total;
         }
     }

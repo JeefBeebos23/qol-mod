@@ -4,7 +4,10 @@ import com.jeefbeebos23.qolmod.config.QolConfig;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,6 +18,9 @@ import java.util.function.Predicate;
 
 public class VeinMinerFeature {
 
+    private static final TagKey<Block> ORES_TAG =
+        TagKey.create(Registries.BLOCK, Identifier.parse("c:ores"));
+
     private static final Set<UUID> activePlayers = ConcurrentHashMap.newKeySet();
 
     public static void register() {
@@ -24,7 +30,9 @@ public class VeinMinerFeature {
             if (!activePlayers.contains(player.getUUID())) return;
 
             String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
-            if (!QolConfig.getInstance().veinMinerBlocks.contains(blockId)) return;
+            boolean inList = QolConfig.getInstance().veinMinerBlocks.contains(blockId);
+            boolean isOre = state.is(ORES_TAG);
+            if (!inList && !isOre) return;
 
             Set<BlockPos> vein = findVein(pos, QolConfig.getInstance().veinMinerMaxBlocks,
                 n -> serverLevel.getBlockState(n).getBlock() == state.getBlock());

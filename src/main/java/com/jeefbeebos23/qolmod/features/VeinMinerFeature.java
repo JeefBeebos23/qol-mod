@@ -31,7 +31,7 @@ public class VeinMinerFeature {
 
             String blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
             boolean inList = QolConfig.getInstance().veinMinerBlocks.contains(blockId);
-            boolean isOre = state.is(ORES_TAG);
+            boolean isOre = state.is(ORES_TAG) || blockId.endsWith("_ore");
             if (!inList && !isOre) return;
 
             Set<BlockPos> vein = findVein(pos, QolConfig.getInstance().veinMinerMaxBlocks,
